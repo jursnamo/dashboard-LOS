@@ -112,9 +112,8 @@
         /* PERBAIKAN: Fix untuk mencegah scroll pada body ketika modal terbuka */
         body.body-modal-open {
             overflow: hidden !important;
-            position: fixed !important;
+            position: fixed;
             width: 100%;
-            height: 100%;
         }
         
         /* Perbaikan untuk modal bottleneck */
@@ -149,6 +148,66 @@
             filter: blur(2px);
             pointer-events: none;
         }
+        .chart-box{
+            position: relative;
+            height: 280px;   /* fixed */
+        }
+        .modal-body{
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* Nonaktifkan scroll pada modal bottleneck kecuali pada area tertentu */
+        #bottleneckDetailModal .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #bottleneckDetailModal .modal-body::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+        
+        /* PERBAIKAN BARU: Nonaktifkan semua interaksi scroll pada chart canvas di dalam modal */
+        #bottleneckDetailModal canvas {
+            touch-action: none !important;
+            -ms-touch-action: none !important;
+            pointer-events: auto !important;
+        }
+
+        /* Perbaikan untuk mencegah scroll pada modal body */
+        #bottleneckDetailModal .modal-body {
+            overscroll-behavior: contain !important;
+        }
+        
+        /* PERBAIKAN: Mencegah scroll pada chart container */
+        #bottleneckDetailModal .chart-card {
+            overflow: hidden !important;
+        }
+
+        #bottleneckDetailModal .chart-card canvas {
+            display: block !important;
+            max-height: 200px !important;
+        }
+
+        /* Pastikan modal body tidak scroll horizontal */
+        #bottleneckDetailModal .modal-body {
+            overflow-x: hidden !important;
+        }
+        
+        /* PERBAIKAN TAMBAHAN: Styling untuk canvas yang dilindungi dari scroll */
+        .no-scroll-canvas {
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+        
+        /* Mencegah highlight pada chart */
+        .chartjs-render-monitor {
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
     </style>
 </head>
 <body>
@@ -542,68 +601,71 @@
 </div>
 
 <!-- Bottleneck Detail Modal -->
-<div class="modal fade" id="bottleneckDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
-                <h5 class="modal-title" id="bottleneckModalLabel">
-                    <i class="bi bi-hourglass-split me-2"></i>Detail Bottleneck: <span id="bottleneckStatusName"></span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Summary Stats -->
-                <div class="row mb-4" id="bottleneckSummaryCards">
-                    <!-- Akan diisi oleh JavaScript -->
-                </div>
-                
-                <!-- Detail Tabel -->
-                <h6 class="section-title">Detail Aplikasi dengan Status Ini</h6>
-                <div class="table-responsive" style="max-height: 400px;">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>App ID</th>
-                                <th>Branch</th>
-                                <th>Purpose</th>
-                                <th>Segment</th>
-                                <th class="text-end">TAT Status</th>
-                                <th class="text-end">TAT E2E</th>
-                                <th class="text-end">Limit</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bottleneckDetailTable">
+ <div class="chart-box"></div>
+ <canvas id="durasiChart"></canvas>
+        <div class="modal fade" id="bottleneckDetailModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-white">
+                        <h5 class="modal-title" id="bottleneckModalLabel">
+                            <i class="bi bi-hourglass-split me-2"></i>Detail Bottleneck: <span id="bottleneckStatusName"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Summary Stats -->
+                        <div class="row mb-4" id="bottleneckSummaryCards">
                             <!-- Akan diisi oleh JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Distribution Analysis -->
-                <h6 class="section-title mt-4">Analisis Distribusi</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <div class="chart-head">Distribusi Durasi Status Ini</div>
-                            <canvas id="bottleneckDistributionChart" height="200"></canvas>
+                        </div>
+                        
+                        <!-- Detail Tabel -->
+                        <h6 class="section-title">Detail Aplikasi dengan Status Ini</h6>
+                        <div class="table-responsive" style="max-height: 400px;">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>App ID</th>
+                                        <th>Branch</th>
+                                        <th>Purpose</th>
+                                        <th>Segment</th>
+                                        <th class="text-end">TAT Status</th>
+                                        <th class="text-end">TAT E2E</th>
+                                        <th class="text-end">Limit</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bottleneckDetailTable">
+                                    <!-- Akan diisi oleh JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Distribution Analysis -->
+                        <h6 class="section-title mt-4">Analisis Distribusi</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="chart-card">
+                                    <div class="chart-head">Distribusi Durasi Status Ini</div>
+                                    <canvas id="bottleneckDistributionChart" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-card">
+                                    <div class="chart-head">Korelasi dengan Limit</div>
+                                    <canvas id="bottleneckLimitChart" height="200"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <div class="chart-head">Korelasi dengan Limit</div>
-                            <canvas id="bottleneckLimitChart" height="200"></canvas>
-                        </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="exportBottleneckData()">
+                            <i class="bi bi-download me-1"></i>Export Data
+                        </button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="exportBottleneckData()">
-                    <i class="bi bi-download me-1"></i>Export Data
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+        </div>  
+    </div>  
 
 <script>
     let raw = [], mode = 'date', charts = {}, globalOutliers = [], statusOutliers = {};
@@ -665,6 +727,44 @@
     // Store modal instances
     let detailModalInstance = null;
     let singleAppModalInstance = null;
+
+    // PERBAIKAN: Global function untuk mencegah scroll pada canvas
+    function protectCanvasFromScroll(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        // Tambahkan class untuk styling
+        canvas.classList.add('no-scroll-canvas');
+        
+        // Nonaktifkan semua event scroll
+        const preventScroll = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+        
+        // Event untuk mencegah scroll mouse wheel
+        canvas.addEventListener('wheel', preventScroll, { passive: false });
+        canvas.addEventListener('mousewheel', preventScroll, { passive: false });
+        canvas.addEventListener('DOMMouseScroll', preventScroll, { passive: false });
+        
+        // Event untuk mencegah scroll touch
+        canvas.addEventListener('touchmove', preventScroll, { passive: false });
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+        
+        // Event untuk mencegah konteks menu
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        console.log(`Canvas ${canvasId} dilindungi dari scroll`);
+    }
 
     // FUNGSI NORMALISASI PURPOSE
     function normalizePurpose(purpose) {
@@ -2723,7 +2823,7 @@
             `Menampilkan semua aplikasi dari top bottlenecks. Total: ${allBottleneckApps.length} aplikasi`);
     }
 
-    // NEW FUNCTION: Show bottleneck detail - DIPERBAIKI
+    // PERBAIKAN UTAMA: Fungsi showBottleneckDetail dengan pencegahan scroll yang kuat
     function showBottleneckDetail(status) {
         // Get data for this status
         const statusData = statusBuckets[status] || [];
@@ -2832,6 +2932,39 @@
         
         modal.show();
         
+        // PERBAIKAN UTAMA: Pencegahan scroll yang kuat pada chart
+        setTimeout(() => {
+            // Lindungi kedua canvas dari scroll
+            protectCanvasFromScroll('bottleneckDistributionChart');
+            protectCanvasFromScroll('bottleneckLimitChart');
+            
+            // Tambahkan event listener untuk mencegah scroll pada modal body untuk canvas
+            const modalBody = modalElement.querySelector('.modal-body');
+            if (modalBody) {
+                modalBody.addEventListener('wheel', function(e) {
+                    // Jika event berasal dari canvas, cegah scroll
+                    if (e.target.tagName === 'CANVAS' || 
+                        e.target.classList.contains('chartjs-render-monitor') ||
+                        e.target.classList.contains('no-scroll-canvas')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }, { passive: false });
+                
+                modalBody.addEventListener('touchmove', function(e) {
+                    // Jika event berasal dari canvas, cegah scroll
+                    if (e.target.tagName === 'CANVAS' || 
+                        e.target.classList.contains('chartjs-render-monitor') ||
+                        e.target.classList.contains('no-scroll-canvas')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }, { passive: false });
+            }
+        }, 500);
+        
         // PERBAIKAN: Event listener untuk mengembalikan scroll ketika modal ditutup
         modalElement.addEventListener('hidden.bs.modal', function onHidden() {
             enableBodyScroll();
@@ -2839,7 +2972,7 @@
         });
     }
 
-    // NEW FUNCTION: Create bottleneck distribution chart
+    // PERBAIKAN: Fungsi create bottleneck distribution chart dengan options yang menonaktifkan interaksi
     function createBottleneckDistributionChart(status, tatValues, stats) {
         const ctx = document.getElementById('bottleneckDistributionChart').getContext('2d');
         
@@ -2876,11 +3009,19 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                // PERBAIKAN: Nonaktifkan interaksi untuk mencegah scroll
+                interaction: {
+                    mode: null,
+                    intersect: false
+                },
+                // PERBAIKAN: Nonaktifkan events
+                events: [],
                 plugins: {
                     legend: {
                         display: false
                     },
                     tooltip: {
+                        enabled: true,
                         callbacks: {
                             label: function(context) {
                                 return `Jumlah: ${context.parsed.y} apps`;
@@ -2907,7 +3048,7 @@
         });
     }
 
-    // NEW FUNCTION: Create bottleneck limit correlation chart
+    // PERBAIKAN: Fungsi create bottleneck limit correlation chart dengan options yang menonaktifkan interaksi
     function createBottleneckLimitChart(status, statusData) {
         const ctx = document.getElementById('bottleneckLimitChart').getContext('2d');
         
@@ -2944,15 +3085,16 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                onClick: (e, items) => {
-                    if (items && items.length > 0) {
-                        const index = items[0].index;
-                        const app = scatterData[index].app;
-                        showSingleAppDetail(app);
-                    }
+                // PERBAIKAN: Nonaktifkan interaksi untuk mencegah scroll
+                interaction: {
+                    mode: null,
+                    intersect: false
                 },
+                // PERBAIKAN: Nonaktifkan events
+                events: [],
                 plugins: {
                     tooltip: {
+                        enabled: true,
                         callbacks: {
                             label: function(context) {
                                 const app = scatterData[context.dataIndex].app;
@@ -3064,6 +3206,18 @@
                 }, 100);
             });
         });
+        
+        // Khusus untuk bottleneck modal, tambahkan event listener tambahan
+        const bottleneckModal = document.getElementById('bottleneckDetailModal');
+        if (bottleneckModal) {
+            bottleneckModal.addEventListener('shown.bs.modal', function() {
+                // Beri waktu untuk chart dirender, lalu lindungi dari scroll
+                setTimeout(() => {
+                    protectCanvasFromScroll('bottleneckDistributionChart');
+                    protectCanvasFromScroll('bottleneckLimitChart');
+                }, 800);
+            });
+        }
     });
 </script>
 </body>
