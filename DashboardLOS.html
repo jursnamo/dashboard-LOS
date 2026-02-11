@@ -1,0 +1,3070 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOS Dashboard - Advanced Analytics</title>
+    
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <script src="bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="C:/Users/Jursnamo/Desktop/Dashboard/bootstrap-icons-1.13.1/bootstrap-icons.min.css">
+    <script src="chart.js"></script>
+    <script src="xlsx.full.min.js"></script>
+    
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
+        body { background-color: var(--bg); font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; color: #334155; }
+        
+        .main-wrap { max-width: 1600px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; min-height: 90vh; }
+        .header { background: var(--primary); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .step { display: none; padding: 30px; animation: fadeIn 0.4s; }
+        .step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .upload-area { border: 3px dashed #cbd5e1; border-radius: 12px; padding: 60px; text-align: center; cursor: pointer; transition: 0.2s; background: #fdfdfd; }
+        .upload-area:hover { border-color: var(--accent); background: #f0f7ff; }
+        
+        /* MAPPING STYLE */
+        .map-box { background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; height: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.01); position: relative; z-index: 10; }
+        .lbl { font-weight: 700; font-size: 0.75rem; color: #64748b; margin-bottom: 5px; display: block; text-transform: uppercase; }
+        
+        /* FIXED TOGGLE SWITCH */
+        .mode-sw { display: flex; background: #e2e8f0; padding: 4px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; position: relative; z-index: 20; }
+        .mode-btn { flex: 1; text-align: center; padding: 10px; font-weight: 600; border-radius: 6px; color: #64748b; transition: 0.2s; user-select: none; }
+        .mode-btn:hover { background: rgba(255,255,255,0.5); color: var(--accent); }
+        .mode-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: 800; }
+        .inp-p { display: none; } .inp-p.show { display: block; animation: fadeIn 0.3s; }
+
+        /* COMPONENTS */
+        .section-title { font-size: 0.95rem; font-weight: 800; color: #1e293b; margin: 25px 0 15px 0; padding-left: 10px; border-left: 4px solid var(--accent); }
+        
+        .kpi-card { background: white; padding: 15px 10px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s; cursor: pointer; }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .kpi-title { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 5px; }
+        .kpi-val { font-size: 1.3rem; font-weight: 800; color: #1e293b; }
+        .kpi-sub { font-size: 0.65rem; color: #94a3b8; }
+
+        .chart-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
+        .chart-head { font-weight: 700; color: #334155; margin-bottom: 15px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        
+        .table-custom { font-size: 0.75rem; width: 100%; }
+        .table-custom th { background: #f8fafc; padding: 10px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
+        .table-custom td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+        .badge-out { background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #fecaca; }
+        .badge-out:hover { background: #ef4444; color: white; border-color: #ef4444; }
+        
+        .kpi-clickable { cursor: pointer; transition: all 0.2s; }
+        .kpi-clickable:hover { background-color: #f8fafc !important; }
+        
+        .chart-clickable { cursor: pointer; }
+        .chart-clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* Single App Modal */
+        .app-detail-row { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .app-detail-label { font-weight: 600; color: #4b5563; min-width: 120px; }
+        .app-detail-value { color: #1f2937; }
+        .highlight-outlier { background-color: #fef2f2 !important; border-left: 4px solid #ef4444; }
+        
+        /* Distribution summary */
+        .dist-summary { margin-top: 10px; }
+        .dist-summary .badge { font-size: 0.65rem; padding: 4px 8px; }
+        
+        /* Outlier info badge */
+        .outlier-info { background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; }
+        
+        /* Limit info badge */
+        .limit-info { background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; }
+        .limit-warning { background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; }
+        
+        /* Status badges */
+        .status-normal { background-color: #d1fae5; color: #065f46; }
+        .status-outlier { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Modal fixes */
+        .modal { z-index: 1060 !important; }
+        .modal-backdrop { z-index: 1050 !important; }
+        
+        /* Limit highlight in table */
+        .limit-zero { color: #94a3b8; font-style: italic; }
+        .limit-negative { color: #ef4444; font-weight: bold; }
+        .limit-positive { color: #16a34a; font-weight: bold; }
+        
+        /* Modal header colors */
+        .modal-header-normal { background-color: #3b82f6 !important; }
+        .modal-header-outlier { background-color: #ef4444 !important; }
+        
+        /* Style untuk tabel status dengan kolom baru */
+        .iqr-cell { font-weight: 600; color: #7c3aed; }
+        .boundary-cell { font-weight: 600; color: #d946ef; }
+        .status-table-small { font-size: 0.7rem; }
+        
+        /* New scatter chart legend */
+        .scatter-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .scatter-legend-item { display: flex; align-items: center; font-size: 0.7rem; }
+        .scatter-legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 4px; }
+        
+        /* Dynamic Y-axis adjustment */
+        .y-axis-info { font-size: 0.7rem; color: #64748b; margin-top: 5px; }
+        
+        /* Bottleneck modal styling */
+        .bottleneck-summary-card { border-left: 4px solid #f59e0b; }
+        
+        /* PERBAIKAN: Fix untuk mencegah scroll pada body ketika modal terbuka */
+        body.body-modal-open {
+            overflow: hidden !important;
+            position: fixed !important;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Perbaikan untuk modal bottleneck */
+        #bottleneckDetailModal .modal-dialog {
+            max-height: 90vh;
+            margin: 5vh auto;
+        }
+        
+        #bottleneckDetailModal .modal-content {
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        #bottleneckDetailModal .modal-body {
+            max-height: calc(90vh - 140px);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Pastikan backdrop menutupi seluruh layar */
+        .modal-backdrop {
+            z-index: 1040 !important;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal {
+            z-index: 1050 !important;
+        }
+        
+        /* Nonaktifkan scroll pada konten utama ketika modal terbuka */
+        .main-wrap.modal-blur {
+            filter: blur(2px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrap">
+    <div class="header">
+        <div>
+            <h4 class="mb-0 fw-bold"><i class="bi bi-layers-fill me-2"></i>Executive LOS Dashboard</h4>
+            <small class="opacity-75">Strategic Insights & Performance Monitoring</small>
+        </div>
+        <button class="btn btn-outline-light btn-sm" onclick="location.reload()">Reset Analysis</button>
+    </div>
+
+    <div id="step1" class="step active">
+        <div class="upload-area" onclick="document.getElementById('fileIn').click()">
+            <input type="file" id="fileIn" hidden accept=".xlsx,.xls,.csv">
+            <div class="mb-4"><i class="bi bi-cloud-arrow-up-fill text-primary" style="font-size: 4rem;"></i></div>
+            <h4>Upload Data Loan</h4>
+            <p class="text-muted">Mendukung file .xlsx dan .csv. Pastikan file tidak sedang dibuka di Excel.</p>
+        </div>
+    </div>
+
+    <div id="step2" class="step">
+        <h5 class="fw-bold text-primary mb-4 border-bottom pb-2">Konfigurasi Data Mapping</h5>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="map-box">
+                    <span class="lbl"><i class="bi bi-person-badge me-1"></i> Identitas & Bisnis</span>
+                    <label class="small text-muted mt-2">ID Aplikasi (Unik)</label>
+                    <select id="mId" class="form-select mb-2 col-sel"></select>
+                    <label class="small text-muted">Segment Bisnis</label>
+                    <select id="mSeg" class="form-select mb-2 col-sel"></select>
+                    <label class="small text-muted">Tujuan (Purpose)</label>
+                    <select id="mPurp" class="form-select mb-2 col-sel"></select>
+                    <hr class="my-2">
+                    <label class="small text-muted">Approved Limit (Angka)</label>
+                    <select id="mLimit" class="form-select mb-2 col-sel"></select>
+                    <label class="small text-muted">Nama Cabang (Branch)</label>
+                    <select id="mBranch" class="form-select col-sel"></select>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="map-box border-primary" style="background:#f8fbff; position: relative; z-index: 50;">
+                    <span class="lbl text-primary"><i class="bi bi-stopwatch me-1"></i> Mode Perhitungan</span>
+                    
+                    <div class="mode-sw mt-2">
+                        <div id="btn-date" class="mode-btn active" onclick="switchMode('date')">
+                            <i class="bi bi-calendar-range me-1"></i> Tanggal
+                        </div>
+                        <div id="btn-tat" class="mode-btn" onclick="switchMode('tat')">
+                            <i class="bi bi-123 me-1"></i> Kolom TAT
+                        </div>
+                    </div>
+                    
+                    <div id="pan-date" class="inp-p show">
+                        <label class="small text-muted">Start Date</label>
+                        <select id="mStart" class="form-select col-sel form-select-sm mb-2"></select>
+                        <label class="small text-muted">Completed Date</label>
+                        <select id="mEnd" class="form-select col-sel form-select-sm"></select>
+                    </div>
+
+                    <div id="pan-tat" class="inp-p">
+                        <label class="small text-muted fw-bold text-primary">Pilih Kolom TAT/SLA</label>
+                        <select id="mTat" class="form-select col-sel form-select-sm"></select>
+                    </div>
+
+                    <hr class="my-2">
+                    <label class="small text-muted fw-bold">Booking Month (Untuk Grafik Tren)</label>
+                    <select id="mMonth" class="form-select col-sel form-select-sm"></select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="map-box">
+                    <span class="lbl"><i class="bi bi-diagram-3 me-1"></i> Status Flow</span>
+                    <label class="small text-muted mt-2">Kolom Status</label>
+                    <select id="mStat" class="form-select mb-3 col-sel"></select>
+                    <div class="alert alert-light border small text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Durasi status yang sama dalam 1 ID akan dijumlahkan.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-end mt-4">
+            <button class="btn btn-primary px-5 py-2 shadow" onclick="processData()">
+                Generate Dashboard <i class="bi bi-chevron-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="step3" class="step">
+        <h6 class="section-title">1. EXECUTIVE SUMMARY & STATISTICS</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <div class="alert alert-info border-0 p-2 mb-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                        <div>
+                            <small class="fw-bold d-block">Outlier Definition:</small>
+                            <small>Data dengan TAT > <span class="fw-bold" id="outlierFormula">Q3 + 1.5×IQR</span>. Range normal: Q1=<span id="infoQ1">-</span> to Q3=<span id="infoQ3">-</span> hari.</small>
+                            <small class="d-block mt-1">
+                                <i class="bi bi-currency-dollar me-1"></i>
+                                <span class="limit-info">Limit Calculation:</span> Hanya aplikasi dengan limit > 0 yang dihitung untuk total & average limit.
+                                <span id="limitCalcInfo">-</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row g-3 mb-3">
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color: #2563eb;"><div class="kpi-title">Total Applications</div><div class="kpi-val" id="kTotalApp">0</div><div class="kpi-sub">Lifetime Volume</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color: #0891b2;"><div class="kpi-title">Avg Apps / Month</div><div class="kpi-val" id="kAvgAppMonth">0</div><div class="kpi-sub">Productivity Rate</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color: #16a34a;"><div class="kpi-title">Total Approved Limit</div><div class="kpi-val text-success" id="kTotalLimit">0</div><div class="kpi-sub">
+                <span id="limitSubText">Portfolio Exposure</span>
+                <div class="mt-1" id="limitInfoBadge"></div>
+            </div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color: #ca8a04;"><div class="kpi-title">Avg Limit / App</div><div class="kpi-val text-warning" id="kAvgLimit">0</div><div class="kpi-sub">
+                <span id="avgLimitSubText">Average Ticket Size</span>
+                <div class="mt-1" id="avgLimitInfoBadge"></div>
+            </div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#6366f1; background:#f5f3ff"><div class="kpi-title">Average TAT</div><div class="kpi-val" id="vAvg">-</div><div class="kpi-sub">Hari</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Modus (Mode)</div><div class="kpi-val" id="vMode">-</div><div class="kpi-sub">Hari</div></div></div>
+        </div>
+        
+        <div class="row g-2">
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q1', q1Apps)" style="border-left-color:#3b82f6; background:#eff6ff"><div class="kpi-title">Quartile 1 (25%)</div><div class="kpi-val" id="vQ1">-</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('median', medianApps)" style="border-left-color:#8b5cf6; background:#f3f0ff"><div class="kpi-title">Median TAT</div><div class="kpi-val" id="vMed">1.5</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q3', q3Apps)" style="border-left-color:#f59e0b; background:#fffbeb"><div class="kpi-title">Quartile 3 (75%)</div><div class="kpi-val" id="vQ3">-</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#7c3aed; background:#f5f3ff"><div class="kpi-title">IQR (Q3-Q1)</div><div class="kpi-val" id="vIQR">-</div><div class="kpi-sub">Interquartile Range</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Outlier Boundary</div><div class="kpi-val" id="vOutBoundary">-</div><div class="kpi-sub">Q3 + 1.5×IQR</div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showOutliersModal('global')" style="border-left-color:#ef4444; background:#fef2f2"><div class="kpi-title text-danger">Total Outliers</div><div class="kpi-val text-danger" id="vOut">-</div><div class="kpi-sub">Click for details</div></div></div>
+        </div>
+
+        <h6 class="section-title">2. EXCEPTION MANAGEMENT (OUTLIER ANALYSIS)</h6>
+        <div class="row g-4 mb-4">
+            <div class="col-md-12">
+                <div class="chart-card border-warning">
+                    <div class="chart-head text-warning">
+                        <span><i class="bi bi-bullseye me-2"></i>Peta Sebaran Outlier (5 Kategori)</span>
+                        <span class="small text-muted">Klik titik untuk detail per aplikasi</span>
+                    </div>
+                    <div class="mb-2" id="scatterLegend">
+                        <!-- Legend akan diisi oleh JavaScript -->
+                    </div>
+                    <div style="height: 320px;"><canvas id="cScatter"></canvas></div>
+                </div>
+            </div>
+            
+            <!-- NEW DASHBOARD: TAT vs Loan Size -->
+            <div class="col-md-12">
+                <div class="chart-card border-info">
+                    <div class="chart-head text-info">
+                        <span><i class="bi bi-graph-up me-2"></i>TAT vs Loan Size (Limit Approved)</span>
+                        <span class="small text-muted">Klik titik untuk detail per aplikasi</span>
+                    </div>
+                    <div class="mb-2" id="loanSizeLegend">
+                        <!-- Legend akan diisi oleh JavaScript -->
+                    </div>
+                    <div style="height: 320px;"><canvas id="cLoanSize"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="col-md-12">
+                <div class="chart-card">
+                    <div class="chart-head"><span><i class="bi bi-list-ul me-2"></i>Detail Outlier per Status</span>
+                        <span class="small text-muted">IQR = Q3 - Q1 | Boundary = Q3 + 1.5×IQR</span>
+                    </div>
+                    <div style="overflow-y:auto; height: 350px;">
+                        <table class="table-custom status-table-small">
+                            <thead><tr><th class="text-start">Status Flow</th><th>Avg</th><th>Q1</th><th>Med</th><th>Q3</th><th>IQR</th><th>Boundary</th><th>Outlier</th></tr></thead>
+                            <tbody id="tblStatus"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h6 class="section-title">3. PROCESS HEALTH CHECK</h6>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="chart-card border-danger">
+                    <div class="chart-head text-danger">Top Bottlenecks</div>
+                    <div style="height: 280px;"><canvas id="cSlow"></canvas></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <div class="chart-head">Avg TAT per Purpose</div>
+                    <div style="height: 280px;"><canvas id="cPurp"></canvas></div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="chart-card chart-clickable" onclick="showTatDistributionDetail()">
+                    <div class="chart-head">Distribusi TAT (6 Kategori) <span class="small text-primary">Click for details</span></div>
+                    <div style="height: 250px;"><canvas id="cDist"></canvas></div>
+                    <div id="distChartInfo" class="small text-muted mt-2"></div>
+                </div>
+            </div>
+            <div class="mt-2 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Klik bar untuk melihat detail per status</small>
+                <button class="btn btn-sm btn-outline-warning" onclick="showAllBottlenecks()">
+                    <i class="bi bi-list-ul me-1"></i>Lihat Semua Detail
+                </button>
+            </div>
+        </div>
+
+        <h6 class="section-title">4. BUSINESS GROWTH & DISTRIBUTION</h6>
+        <div class="row g-4 mb-3">
+            <div class="col-md-6">
+                <div class="chart-card chart-clickable" onclick="showTrendDetail()">
+                    <div class="chart-head">Tren Volume & Limit <span class="small text-primary">Click for details</span></div>
+                    <div style="height: 250px;"><canvas id="cTrendMix"></canvas></div>
+                    <div id="trendChartInfo" class="small text-muted mt-2"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card chart-clickable" onclick="showBranchDetail()">
+                    <div class="chart-head">Top 10 Branch <span class="small text-primary">Click for details</span></div>
+                    <div style="height: 250px;"><canvas id="cBranch"></canvas></div>
+                    <div id="branchChartInfo" class="small text-muted mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unified Modal for All Details -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header" id="detailModalHeader">
+                <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-list-check me-2"></i>Detail Aplikasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeDetailModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info py-2 mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="detailInfoText">Menampilkan detail aplikasi</span>
+                </div>
+                <div class="row mb-3" id="detailSummaryCards">
+                    <!-- Summary cards will be inserted here -->
+                </div>
+                <div class="mb-3">
+                    <div class="input-group input-group-sm" style="width: 300px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="detailSearch" class="form-control" placeholder="Cari berdasarkan App ID, Branch, atau Purpose..." onkeyup="filterDetailTable()">
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height:500px">
+                    <table class="table table-hover table-sm small">
+                        <thead class="table-light" id="detailTableHeader">
+                            <!-- Table headers will be inserted here -->
+                        </thead>
+                        <tbody id="detailTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="mt-3 text-muted small" id="detailTableFooter">
+                    <!-- Footer info will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="exportDetailData()">
+                    <i class="bi bi-download me-1"></i>Export CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Single Application Detail Modal -->
+<div class="modal fade" id="singleAppModal" tabindex="-1" aria-labelledby="singleAppModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header" id="singleAppModalHeader">
+                <h5 class="modal-title" id="singleAppModalLabel"><i class="bi bi-file-earmark-text me-2"></i>Detail Aplikasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeSingleAppModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert" id="singleAppAlert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="singleAppInfoText">Detail aplikasi</span>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100" id="singleAppInfoCard">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold mb-3" id="singleAppInfoTitle"><i class="bi bi-file-earmark-text me-2"></i>Application Information</h6>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">App ID:</span>
+                                    <span class="app-detail-value fw-bold" id="singleAppId">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Branch:</span>
+                                    <span class="app-detail-value" id="singleAppBranch">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Purpose:</span>
+                                    <span class="app-detail-value" id="singleAppPurpose">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Segment:</span>
+                                    <span class="app-detail-value" id="singleAppSegment">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Booking Month:</span>
+                                    <span class="app-detail-value" id="singleAppMonth">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100" id="singleAppStatCard">
+                            <div class="card-body">
+                                <h6 class="card-title fw-bold mb-3" id="singleAppStatTitle"><i class="bi bi-graph-up me-2"></i>Statistic Performance</h6>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">TAT (Hari):</span>
+                                    <span class="app-detail-value fw-bold" id="singleAppTat">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Approved Limit:</span>
+                                    <span class="app-detail-value fw-bold" id="singleAppLimit">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">Status:</span>
+                                    <span class="app-detail-value" id="singleAppStatus">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">vs Q3 (75%):</span>
+                                    <span class="app-detail-value" id="singleAppVsQ3">-</span>
+                                </div>
+                                <div class="app-detail-row d-flex">
+                                    <span class="app-detail-label">vs Outlier Boundary:</span>
+                                    <span class="app-detail-value" id="singleAppVsOutlierBoundary">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card" id="singleAppAnalysisCard">
+                    <div class="card-header py-2" id="singleAppAnalysisHeader">
+                        <h6 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Analisis</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="mb-2">
+                                    <div class="h4 mb-0" id="singleAppPercentile">-</div>
+                                    <div class="small text-muted">Percentile</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="mb-2">
+                                    <div class="h4 mb-0" id="singleAppDaysAboveQ3">-</div>
+                                    <div class="small text-muted">Hari di atas Q3</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="mb-2">
+                                    <div class="h4 mb-0" id="singleAppDaysAboveOutlierBoundary">-</div>
+                                    <div class="small text-muted">Hari di atas Boundary</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" id="singleAppProgressNormal" style="width: 75%">Normal (0-75%)</div>
+                                <div class="progress-bar bg-warning" id="singleAppProgressQ3" style="width: 0%">Q3-Boundary</div>
+                                <div class="progress-bar bg-danger" id="singleAppProgressOutlier" style="width: 0%">Outlier</div>
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <span id="singleAppAnalysisText">Analisis posisi TAT aplikasi terhadap distribusi normal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="singleAppShowAllBtn" onclick="showAllOutliersFromSingle()">
+                    <i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottleneck Detail Modal -->
+<div class="modal fade" id="bottleneckDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="bottleneckModalLabel">
+                    <i class="bi bi-hourglass-split me-2"></i>Detail Bottleneck: <span id="bottleneckStatusName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Summary Stats -->
+                <div class="row mb-4" id="bottleneckSummaryCards">
+                    <!-- Akan diisi oleh JavaScript -->
+                </div>
+                
+                <!-- Detail Tabel -->
+                <h6 class="section-title">Detail Aplikasi dengan Status Ini</h6>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>App ID</th>
+                                <th>Branch</th>
+                                <th>Purpose</th>
+                                <th>Segment</th>
+                                <th class="text-end">TAT Status</th>
+                                <th class="text-end">TAT E2E</th>
+                                <th class="text-end">Limit</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bottleneckDetailTable">
+                            <!-- Akan diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Distribution Analysis -->
+                <h6 class="section-title mt-4">Analisis Distribusi</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <div class="chart-head">Distribusi Durasi Status Ini</div>
+                            <canvas id="bottleneckDistributionChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <div class="chart-head">Korelasi dengan Limit</div>
+                            <canvas id="bottleneckLimitChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="exportBottleneckData()">
+                    <i class="bi bi-download me-1"></i>Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let raw = [], mode = 'date', charts = {}, globalOutliers = [], statusOutliers = {};
+    let q1Apps = [], medianApps = [], q3Apps = [], e2eData = [];
+    let trendData = {}, branchData = {}, tatDistributionData = {};
+    let currentDetailType = '', currentDetailData = [], currentDetailTitle = '';
+    let globalStats = {}; // Store global stats for single app analysis
+    let appsWithPositiveLimit = []; // Store apps with positive limit
+    let statusStats = {}; // Store stats for each status
+    let statusBuckets = {}; // Store status buckets data
+    let statusAgg = {}; // Store status aggregation data
+    let bottleneckChartData = []; // Store top bottlenecks data
+    
+    // PERUBAHAN: Update bucket distribusi TAT - <7 hari bukan <8 hari
+    const tatBuckets = [
+        { label: '<7 hari', min: 0, max: 6.999 },
+        { label: '<14 hari', min: 7, max: 13.999 },
+        { label: '<30 hari', min: 14, max: 29.999 },
+        { label: '<60 hari', min: 30, max: 59.999 },
+        { label: '<90 hari', min: 60, max: 89.999 },
+        { label: '≥90 hari', min: 90, max: Infinity }
+    ];
+
+    // NEW: Loan size buckets (dalam juta)
+    const loanSizeBuckets = [
+        { label: '0-1M', min: 0, max: 1e9 },
+        { label: '1-2M', min: 1e9, max: 2e9 },
+        { label: '3-3M', min: 2e9, max: 3e9 },
+        { label: '4-4M', min: 3e9, max: 4e9 },
+        { label: '5-5M', min: 4e9, max: 5e9 },
+        { label: '6-6M', min: 5e9, max: 6e9 },
+        { label: '7-7M', min: 6e9, max: 7e9 },
+        { label: '8-8M', min: 7e9, max: 8e9 },
+        { label: '9-9M', min: 8e9, max: 9e9 },
+        { label: '9-10M', min:9e9, max: 10e9 },
+        { label: '10-11M', min: 10e9, max: 11e9 },
+        { label: '11-12M', min: 11e9, max: 12e9 },
+        { label: '12-13M', min: 12e9, max: 13e9 },
+        { label: '13-14M', min: 13e9, max: 14e9 },
+        { label: '14-15M', min: 14e9, max: 15e9 },
+        { label: '15-16M', min: 15e9, max: 16e9 },
+        { label: '16-17M', min: 16e9, max: 17e9 },
+        { label: '17-18M', min: 17e9, max: 18e9 },
+        { label: '18-19M', min: 18e9, max: 19e9 },
+        { label: '19-20M', min: 19e9, max: 20e9 },
+        { label: '20-21M', min: 20e9, max: 21e9 },
+        { label: '21-22M', min: 21e9, max: 22e9 },
+        { label: '22-23M', min: 22e9, max: 23e9 },
+        { label: '23-24M', min: 23e9, max: 24e9 },
+        { label: '24-25M', min: 24e9, max: 25e9 },
+        { label: '25-26M', min: 25e9, max: 26e9 },
+        { label: '26-27M', min: 26e9, max: 27e9 },
+        { label: '27-28M', min: 27e9, max: 28e9 },
+        { label: '28-29M', min: 28e9, max: 29e9 },
+        { label: '29-30M', min: 29e9, max: 30e9 },
+        { label: '>30M', min: 30e9, max: Infinity }
+    ];
+
+    // Store modal instances
+    let detailModalInstance = null;
+    let singleAppModalInstance = null;
+
+    // FUNGSI NORMALISASI PURPOSE
+    function normalizePurpose(purpose) {
+        if (!purpose && purpose !== 0) return 'Unknown';
+        
+        // Konversi ke string, trim, lowercase
+        let normalized = String(purpose).trim().toLowerCase();
+        
+        // Hapus karakter khusus dan spasi berlebih
+        normalized = normalized.replace(/[^\w\s]/g, '');
+        normalized = normalized.replace(/\s+/g, ' ');
+        
+        // Jika kosong setelah normalisasi
+        if (!normalized || normalized === 'unknown') return 'Unknown';
+        
+        return normalized;
+    }
+
+    function switchMode(m) {
+        mode = m;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-'+m).classList.add('active');
+        document.querySelectorAll('.inp-p').forEach(p => p.classList.remove('show'));
+        document.getElementById('pan-'+m).classList.add('show');
+    }
+
+    // ROBUST FILE READER
+    document.getElementById('fileIn').addEventListener('change', e => {
+        const f = e.target.files[0];
+        if(!f) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array', cellDates: true});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                raw = XLSX.utils.sheet_to_json(worksheet, {defval:''});
+                
+                if(raw.length === 0) {
+                    alert("File terbaca tapi kosong atau format tidak dikenali.");
+                    return;
+                }
+                
+                const headers = XLSX.utils.sheet_to_json(worksheet, {header: 1})[0];
+                fillSel(headers);
+                
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+            } catch(err) {
+                console.error(err);
+                alert("Gagal memproses file! Error: " + err.message);
+            }
+        };
+        reader.readAsArrayBuffer(f);
+    });
+    
+    function fillSel(h) {
+        document.querySelectorAll('.col-sel').forEach(s => {
+            s.innerHTML = '<option disabled selected>Pilih...</option>';
+            h.forEach(x => { let o = document.createElement('option'); o.value = x; o.text = x; s.appendChild(o); });
+        });
+        const auto = (id, keys) => {
+            const el = document.getElementById(id);
+            for(let i=0; i<el.options.length; i++) if(keys.some(k => el.options[i].text.toLowerCase().includes(k))) { el.selectedIndex=i; break; }
+        };
+        auto('mId', ['app_id', 'id', 'no']);
+        auto('mSeg', ['segment']);
+        auto('mPurp', ['purpose', 'pupose']);
+        auto('mLimit', ['approved limit', 'limit']);
+        auto('mBranch', ['branch', 'cabang']);
+        auto('mMonth', ['booking month', 'month']);
+        auto('mStart', ['create_date', 'start']);
+        auto('mEnd', ['completed_date', 'end']);
+        auto('mTat', ['tat', 'sla']);
+        auto('mStat', ['status_flow', 'flow']);
+
+        const sIdx = document.getElementById('mStart').selectedIndex;
+        const tIdx = document.getElementById('mTat').selectedIndex;
+        if(sIdx <= 0 && tIdx > 0) switchMode('tat');
+    }
+
+    // Fungsi untuk format bulan untuk display
+    function formatMonthDisplay(monthKey) {
+        if (monthKey === 'Unknown' || !monthKey) return 'Unknown';
+        
+        try {
+            if (monthKey.includes('-')) {
+                const [year, month] = monthKey.split('-');
+                const monthNum = parseInt(month);
+                const yearNum = parseInt(year);
+                
+                const monthNames = [
+                    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+                ];
+                
+                const shortYear = yearNum.toString().slice(-2);
+                return `${monthNames[monthNum - 1]} ${shortYear}`;
+            } else {
+                return monthKey;
+            }
+        } catch (e) {
+            return monthKey;
+        }
+    }
+
+    function processData() {
+        const m = {
+            id: document.getElementById('mId').value,
+            seg: document.getElementById('mSeg').value,
+            purp: document.getElementById('mPurp').value,
+            limit: document.getElementById('mLimit').value,
+            branch: document.getElementById('mBranch').value,
+            mon: document.getElementById('mMonth').value,
+            s: document.getElementById('mStart').value,
+            e: document.getElementById('mEnd').value,
+            t: document.getElementById('mTat').value,
+            stat: document.getElementById('mStat').value
+        };
+
+        if(!m.id || !m.stat) { alert("ID Aplikasi dan Status wajib dipilih!"); return; }
+
+        const apps = {}; 
+        statusAgg = {}; // Reset status aggregation
+
+        raw.forEach(row => {
+            const id = row[m.id]; if(!id) return;
+            
+            // PERBAIKAN: Parsing tanggal yang lebih robust untuk menghindari masalah zona waktu
+            let monthKey = '';
+            const dateValue = row[m.mon];
+            
+            if (dateValue instanceof Date) {
+                // Jika sudah Date object
+                monthKey = dateValue.getFullYear() + '-' + String(dateValue.getMonth() + 1).padStart(2, '0');
+            } else if (typeof dateValue === 'string' || typeof dateValue === 'number') {
+                // Coba parse string atau number ke Date dengan cara yang lebih robust
+                try {
+                    // PERBAIKAN: Parsing manual untuk menghindari masalah zona waktu
+                    let parsedDate;
+                    
+                    if (typeof dateValue === 'string') {
+                        // Coba berbagai format tanggal
+                        const dateStr = dateValue.toString().trim();
+                        
+                        // Format 5/1/2025 (MM/DD/YYYY) -> tanggal 5 Januari 2025
+                        const parts = dateStr.split(/[\/\-\.]/);
+                        if (parts.length === 3) {
+                            const month = parseInt(parts[0]);
+                            const day = parseInt(parts[1]);
+                            const year = parseInt(parts[2]);
+                            
+                            // Validasi dan buat tanggal dengan UTC untuk menghindari masalah zona waktu
+                            if (!isNaN(month) && !isNaN(day) && !isNaN(year)) {
+                                // Jika tahun 2 digit, tambahkan 2000
+                                const fullYear = year < 100 ? 2000 + year : year;
+                                parsedDate = new Date(Date.UTC(fullYear, month - 1, day));
+                            }
+                        }
+                    }
+                    
+                    // Jika parsing manual gagal, coba dengan Date biasa
+                    if (!parsedDate || isNaN(parsedDate.getTime())) {
+                        parsedDate = new Date(dateValue);
+                    }
+                    
+                    if (parsedDate && !isNaN(parsedDate.getTime())) {
+                        // Gunakan getUTCMonth() untuk menghindari masalah zona waktu
+                        monthKey = parsedDate.getUTCFullYear() + '-' + 
+                                  String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
+                    } else {
+                        monthKey = 'Unknown';
+                    }
+                } catch (e) {
+                    monthKey = 'Unknown';
+                }
+            } else {
+                monthKey = 'Unknown';
+            }
+
+            // Format tampilan untuk display
+            const displayMonth = formatMonthDisplay(monthKey);
+
+            if(!apps[id]) {
+                apps[id] = {
+                    id, 
+                    seg: row[m.seg] || 'Unknown',
+                    purp: row[m.purp] || 'General',
+                    purpOriginal: row[m.purp] || 'General', // Simpan original purpose
+                    limit: parseFloat(row[m.limit]) || 0,
+                    branch: row[m.branch] || 'Unknown',
+                    mon: monthKey, // Simpan key untuk grouping
+                    displayMon: displayMonth, // Simpan untuk display
+                    min: null, max: null, sumT: 0
+                };
+            }
+
+            let dur = 0;
+            if(mode === 'date') {
+                // PERBAIKAN: Parsing tanggal start dan end juga dengan cara yang sama
+                let d1 = parseDateRobust(row[m.s]);
+                let d2 = parseDateRobust(row[m.e]);
+                
+                if(!isNaN(d1.getTime())) { 
+                    if(!apps[id].min || d1 < apps[id].min) apps[id].min = d1; 
+                }
+                if(!isNaN(d2.getTime())) { 
+                    if(!apps[id].max || d2 > apps[id].max) apps[id].max = d2; 
+                }
+                if(!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
+                    dur = (d2 - d1) / 86400000;
+                }
+            } else {
+                dur = parseFloat(row[m.t]) || 0;
+                apps[id].sumT += dur;
+            }
+            if(dur < 0) dur = 0;
+
+            const k = id + "##" + (row[m.stat]||'Unknown');
+            statusAgg[k] = (statusAgg[k] || 0) + dur;
+        });
+
+        e2eData = Object.values(apps).map(a => {
+            let tat = 0;
+            if(mode === 'date') tat = (a.min && a.max) ? (a.max - a.min) / 86400000 : 0;
+            else tat = a.sumT;
+            // Pastikan TAT adalah angka valid
+            tat = isNaN(tat) ? 0 : Math.max(0, Math.round(tat * 10) / 10);
+            return { 
+                ...a, 
+                tat: tat,
+                purpNormalized: normalizePurpose(a.purp) // Tambahkan normalized purpose
+            };
+        });
+
+        // Filter out invalid TAT
+        e2eData = e2eData.filter(app => !isNaN(app.tat) && app.tat >= 0);
+
+        // Sort by TAT for quartile calculations
+        e2eData.sort((a, b) => a.tat - b.tat);
+        
+        // Filter aplikasi dengan limit positif (> 0) untuk perhitungan limit
+        appsWithPositiveLimit = e2eData.filter(app => app.limit > 0);
+        
+        // Metrics Calculation - PERBAIKAN: Hanya hitung limit dari aplikasi dengan limit > 0
+        const totalApps = e2eData.length;
+        const appsWithZeroOrNegativeLimit = e2eData.filter(app => app.limit <= 0).length;
+        const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
+        const uniqueMonths = [...new Set(e2eData.map(d=>d.mon))].filter(x=>x!=='Unknown').length || 1;
+        globalStats = calcStats(e2eData.map(d=>d.tat));
+        globalOutliers = e2eData.filter(d => d.tat > globalStats.high);
+        
+        console.log("Total e2eData:", e2eData.length);
+        console.log("Apps with positive limit:", appsWithPositiveLimit.length);
+        console.log("Apps with zero/negative limit:", appsWithZeroOrNegativeLimit);
+        console.log("Global stats:", globalStats);
+        
+        // Calculate Q1, Median, and Q3 applications
+        calculateQuartileApplications(e2eData, globalStats);
+
+        // Store data for charts
+        prepareChartData(e2eData, globalStats);
+
+        // Update KPIs dengan info limit
+        document.getElementById('kTotalApp').innerText = totalApps.toLocaleString();
+        document.getElementById('kAvgAppMonth').innerText = (totalApps/uniqueMonths).toFixed(0);
+        
+        // PERBAIKAN: Hanya hitung total limit dari aplikasi dengan limit > 0
+        document.getElementById('kTotalLimit').innerText = formatIDR(totalLimit);
+        
+        // Update subtitle dengan info limit
+        const limitSubText = document.getElementById('limitSubText');
+        const limitInfoBadge = document.getElementById('limitInfoBadge');
+        
+        if (appsWithZeroOrNegativeLimit > 0) {
+            limitSubText.innerHTML = `Portfolio Exposure`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">Hanya dari ${appsWithPositiveLimit.length} apps (${appsWithZeroOrNegativeLimit} apps tanpa limit)</span>`;
+        } else {
+            limitSubText.innerHTML = `Portfolio Exposure`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">Semua ${totalApps} apps memiliki limit</span>`;
+        }
+        
+        // PERBAIKAN: Average limit hanya dari aplikasi dengan limit > 0
+        const avgLimit = appsWithPositiveLimit.length > 0 ? totalLimit / appsWithPositiveLimit.length : 0;
+        document.getElementById('kAvgLimit').innerText = formatIDR(avgLimit);
+        
+        // Update avg limit info
+        const avgLimitSubText = document.getElementById('avgLimitSubText');
+        const avgLimitInfoBadge = document.getElementById('avgLimitInfoBadge');
+        
+        if (appsWithPositiveLimit.length > 0) {
+            avgLimitSubText.innerHTML = `Average Ticket Size`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-info">Dari ${appsWithPositiveLimit.length} apps dengan limit > 0</span>`;
+        } else {
+            avgLimitSubText.innerHTML = `Average Ticket Size`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-warning">Tidak ada aplikasi dengan limit > 0</span>`;
+        }
+        
+        // Update info panel tentang perhitungan limit
+        document.getElementById('limitCalcInfo').innerHTML = 
+            `Dari ${totalApps} aplikasi, ${appsWithPositiveLimit.length} memiliki limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit ≤ 0 tidak dihitung).`;
+        
+        // Update Stats KPIs
+        document.getElementById('vAvg').innerText = globalStats.avg.toFixed(1);
+        document.getElementById('vMed').innerText = globalStats.med.toFixed(1);
+        document.getElementById('vMode').innerText = globalStats.mod;
+        document.getElementById('vQ1').innerText = globalStats.q1.toFixed(1);
+        document.getElementById('vQ3').innerText = globalStats.q3.toFixed(1);
+        document.getElementById('vOut').innerText = globalStats.out;
+        
+        // NEW: Update IQR and Outlier Boundary KPIs
+        const iqrValue = globalStats.q3 - globalStats.q1;
+        document.getElementById('vIQR').innerText = iqrValue.toFixed(1);
+        document.getElementById('vOutBoundary').innerText = globalStats.high.toFixed(1);
+        
+        // Update outlier info
+        document.getElementById('infoQ1').innerText = globalStats.q1.toFixed(1);
+        document.getElementById('infoQ3').innerText = globalStats.q3.toFixed(1);
+        document.getElementById('outlierFormula').innerHTML = 
+            `${globalStats.q3.toFixed(1)} + 1.5×${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} hari`;
+
+        // Create Charts
+        createCharts(e2eData, globalStats, statusAgg, apps);
+
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step3').classList.add('active');
+    }
+
+    function parseDateRobust(dateValue) {
+        if (!dateValue) return new Date(NaN);
+        
+        if (dateValue instanceof Date) {
+            return dateValue;
+        }
+        
+        if (typeof dateValue === 'string') {
+            const dateStr = dateValue.toString().trim();
+            
+            // Coba parsing format MM/DD/YYYY atau DD/MM/YYYY
+            const parts = dateStr.split(/[\/\-\.]/);
+            if (parts.length === 3) {
+                const part1 = parseInt(parts[0]);
+                const part2 = parseInt(parts[1]);
+                const part3 = parseInt(parts[2]);
+                
+                // Coba format MM/DD/YYYY (5/1/2025 = 5 Januari 2025)
+                if (part1 <= 12 && part2 <= 31 && part3 > 1000) {
+                    // part1 adalah bulan, part2 adalah hari, part3 adalah tahun
+                    const year = part3;
+                    const month = part1 - 1;
+                    const day = part2;
+                    return new Date(Date.UTC(year, month, day));
+                }
+                // Coba format DD/MM/YYYY (1/5/2025 = 1 Mei 2025)
+                else if (part2 <= 12 && part1 <= 31 && part3 > 1000) {
+                    // part1 adalah hari, part2 adalah bulan, part3 adalah tahun
+                    const year = part3;
+                    const month = part2 - 1;
+                    const day = part1;
+                    return new Date(Date.UTC(year, month, day));
+                }
+            }
+            
+            // Coba parsing dengan Date biasa
+            const parsed = new Date(dateStr);
+            if (!isNaN(parsed.getTime())) {
+                return parsed;
+            }
+        }
+        
+        // Jika semua gagal, return tanggal invalid
+        return new Date(NaN);
+    }
+
+    function prepareChartData(e2eData, globalStats) {
+        // Trend Data - PERBAIKAN: Hitung volume semua apps, tapi limit hanya dari yang limit > 0
+        trendData = {};
+        e2eData.forEach(d => { 
+            if(!trendData[d.mon]) trendData[d.mon] = {
+                cnt:0, 
+                lim:0, 
+                cntPositiveLimit: 0,
+                limPositive: 0,
+                apps: [],
+                display: d.displayMon || formatMonthDisplay(d.mon)
+            };
+            trendData[d.mon].cnt++; 
+            trendData[d.mon].apps.push(d);
+            
+            // PERBAIKAN: Pisahkan perhitungan untuk limit positif
+            if (d.limit > 0) {
+                trendData[d.mon].cntPositiveLimit++;
+                trendData[d.mon].limPositive += d.limit;
+            }
+            // Catat semua limit (termasuk ≤ 0) untuk reference
+            trendData[d.mon].lim += d.limit;
+        });
+
+        // Branch Data - PERBAIKAN: Pisahkan perhitungan limit
+        branchData = {};
+        e2eData.forEach(d => { 
+            if(!branchData[d.branch]) branchData[d.branch] = {
+                cnt:0, 
+                lim:0,
+                cntPositiveLimit: 0,
+                limPositive: 0,
+                apps: []
+            };
+            branchData[d.branch].cnt++; 
+            branchData[d.branch].apps.push(d);
+            
+            // PERBAIKAN: Pisahkan perhitungan untuk limit positif
+            if (d.limit > 0) {
+                branchData[d.branch].cntPositiveLimit++;
+                branchData[d.branch].limPositive += d.limit;
+            }
+            // Catat semua limit (termasuk ≤ 0) untuk reference
+            branchData[d.branch].lim += d.limit;
+        });
+
+        // TAT Distribution Data - PERBAIKAN: Pisahkan perhitungan limit
+        tatDistributionData = {};
+        
+        // Initialize all buckets
+        tatBuckets.forEach(bucket => {
+            tatDistributionData[bucket.label] = {
+                cnt: 0, 
+                cntPositiveLimit: 0,
+                limPositive: 0,
+                apps: []
+            };
+        });
+        
+        // Count applications per bucket
+        e2eData.forEach(d => {
+            let placed = false;
+            
+            // Check regular buckets
+            for (let bucket of tatBuckets) {
+                if (d.tat >= bucket.min && d.tat <= bucket.max) {
+                    tatDistributionData[bucket.label].cnt++;
+                    tatDistributionData[bucket.label].apps.push(d);
+                    
+                    // PERBAIKAN: Hitung limit positif terpisah
+                    if (d.limit > 0) {
+                        tatDistributionData[bucket.label].cntPositiveLimit++;
+                        tatDistributionData[bucket.label].limPositive += d.limit;
+                    }
+                    placed = true;
+                    break;
+                }
+            }
+            
+            // If not placed in any bucket (shouldn't happen with our buckets)
+            if (!placed) {
+                console.warn(`App ${d.id} with TAT ${d.tat} not placed in any bucket`);
+            }
+        });
+    }
+
+    function createCharts(e2eData, globalStats, statusAgg, apps) {
+        // Sort months for trend chart
+        const sortedMonthKeys = Object.keys(trendData)
+            .filter(key => key !== 'Unknown')
+            .sort((a, b) => {
+                if (a === 'Unknown') return 1;
+                if (b === 'Unknown') return -1;
+                return a.localeCompare(b);
+            });
+        
+        // Jika ada Unknown, taruh di akhir
+        if (trendData['Unknown']) {
+            sortedMonthKeys.push('Unknown');
+        }
+
+        // Prepare labels dan data untuk chart
+        const trendLabels = sortedMonthKeys.map(key => trendData[key].display);
+        const trendCounts = sortedMonthKeys.map(key => trendData[key].cnt);
+        
+        // PERBAIKAN: Average limit hanya dari yang limit > 0
+        const trendAvgLimits = sortedMonthKeys.map(key => {
+            const data = trendData[key];
+            return data.cntPositiveLimit > 0 ? data.limPositive / data.cntPositiveLimit : 0;
+        });
+
+        // Trend Chart
+        if(charts.trendMix) charts.trendMix.destroy();
+        charts.trendMix = new Chart(document.getElementById('cTrendMix'), {
+            type: 'bar',
+            data: {
+                labels: trendLabels,
+                datasets: [
+                    { 
+                        label: 'Volume', 
+                        data: trendCounts, 
+                        backgroundColor: '#2563eb', 
+                        order: 2,
+                        onClick: (evt, elements) => {
+                            if(elements.length > 0) {
+                                const monthKey = sortedMonthKeys[elements[0].index];
+                                showDetailModal('trend', trendData[monthKey].apps, 
+                                    `Aplikasi Bulan: ${trendData[monthKey].display || monthKey}`);
+                            }
+                        }
+                    },
+                    { 
+                        label: 'Avg Limit (hanya >0)', 
+                        data: trendAvgLimits, 
+                        borderColor: '#10b981', 
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        type:'line', 
+                        tension:0.3, 
+                        yAxisID: 'y1', 
+                        order: 1,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#10b981',
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                onClick: (evt, elements) => {
+                    if(elements.length > 0) {
+                        const monthKey = sortedMonthKeys[elements[0].index];
+                        showDetailModal('trend', trendData[monthKey].apps, 
+                            `Aplikasi Bulan: ${trendData[monthKey].display || monthKey}`);
+                    }
+                },
+                scales: { 
+                    y: {
+                        display:true, 
+                        position:'left', 
+                        title: {display: true, text: 'Volume'},
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        }
+                    }, 
+                    y1: {
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Avg Limit (hanya >0)'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    } 
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if(context.datasetIndex === 0) {
+                                    return `Volume: ${context.parsed.y} aplikasi`;
+                                } else {
+                                    const monthKey = sortedMonthKeys[context.dataIndex];
+                                    const data = trendData[monthKey];
+                                    const avgLimit = data.cntPositiveLimit > 0 ? data.limPositive / data.cntPositiveLimit : 0;
+                                    return `Avg Limit (hanya >0): ${formatIDR(avgLimit)}`;
+                                }
+                            },
+                            afterLabel: function(context) {
+                                const monthKey = sortedMonthKeys[context.dataIndex];
+                                const data = trendData[monthKey];
+                                
+                                if(context.datasetIndex === 0) {
+                                    return [
+                                        `Aplikasi dengan limit > 0: ${data.cntPositiveLimit}`,
+                                        `Total Limit (hanya >0): ${formatIDR(data.limPositive)}`,
+                                        `Avg Limit (hanya >0): ${formatIDR(data.cntPositiveLimit > 0 ? data.limPositive / data.cntPositiveLimit : 0)}`
+                                    ].join('\n');
+                                }
+                                return '';
+                            }
+                        }
+                    },
+                    legend: {
+                        labels: {
+                            generateLabels: function(chart) {
+                                const datasets = chart.data.datasets;
+                                return datasets.map(function(dataset, i) {
+                                    return {
+                                        text: dataset.label,
+                                        fillStyle: dataset.type === 'line' ? dataset.borderColor : dataset.backgroundColor,
+                                        strokeStyle: dataset.type === 'line' ? dataset.borderColor : dataset.backgroundColor,
+                                        lineWidth: 2,
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Update chart info
+        const trendChartInfo = document.getElementById('trendChartInfo');
+        const totalWithPositiveLimit = e2eData.filter(app => app.limit > 0).length;
+        trendChartInfo.innerHTML = 
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Average Limit hanya dihitung dari ${totalWithPositiveLimit} aplikasi dengan limit > 0 (${e2eData.length} total apps)</span>`;
+
+        // Branch Chart - Top 10 berdasarkan aplikasi dengan limit positif
+        const topBr = Object.entries(branchData)
+            .map(([branch, data]) => ({
+                branch, 
+                cnt: data.cnt, 
+                cntPositiveLimit: data.cntPositiveLimit,
+                lim: data.lim,
+                limPositive: data.limPositive,
+                apps: data.apps
+            }))
+            .sort((a,b) => b.cntPositiveLimit - a.cntPositiveLimit) // Sort by apps with positive limit
+            .slice(0, 10);
+
+        if(charts.branch) charts.branch.destroy();
+        charts.branch = new Chart(document.getElementById('cBranch'), {
+            type: 'bar',
+            data: {
+                labels: topBr.map(x => x.branch),
+                datasets: [
+                    {
+                        label: 'Total Apps',
+                        data: topBr.map(x => x.cnt),
+                        backgroundColor: '#cbd5e1',
+                        borderColor: '#cbd5e1',
+                        borderWidth: 1,
+                        order: 2
+                    },
+                    {
+                        label: 'Apps dengan Limit > 0',
+                        data: topBr.map(x => x.cntPositiveLimit),
+                        backgroundColor: '#06b6d4',
+                        borderColor: '#06b6d4',
+                        borderWidth: 1,
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (evt, elements) => {
+                    if(elements.length > 0) {
+                        const branch = topBr[elements[0].index];
+                        showDetailModal('branch', branch.apps, `Aplikasi Cabang: ${branch.branch}`);
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: false,
+                        title: {
+                            display: true,
+                            text: 'Jumlah Aplikasi'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const branch = topBr[context.dataIndex];
+                                const datasetLabel = context.dataset.label;
+                                const value = context.parsed.x;
+                                
+                                if (datasetLabel === 'Total Apps') {
+                                    return `Total Apps: ${value}`;
+                                } else {
+                                    const avgLimit = branch.cntPositiveLimit > 0 ? branch.limPositive / branch.cntPositiveLimit : 0;
+                                    return [
+                                        `Apps dengan Limit > 0: ${value}`,
+                                        `Total Limit: ${formatIDR(branch.limPositive)}`,
+                                        `Avg Limit: ${formatIDR(avgLimit)}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Update branch chart info
+        const branchChartInfo = document.getElementById('branchChartInfo');
+        const totalBranches = Object.keys(branchData).length;
+        branchChartInfo.innerHTML = 
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Top 10 cabang berdasarkan aplikasi dengan limit > 0 (${totalBranches} total cabang)</span>`;
+
+        // TAT Distribution Chart - DENGAN 6 BUCKET (sudah diupdate ke <7 hari)
+        const distributionLabels = Object.keys(tatDistributionData);
+        const distributionCounts = distributionLabels.map(label => tatDistributionData[label].cnt);
+        
+        // PERUBAHAN: Warna untuk 6 bucket
+        const distributionColors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'];
+        
+        if(charts.dist) charts.dist.destroy();
+        
+        charts.dist = new Chart(document.getElementById('cDist'), {
+            type: 'bar',
+            data: {
+                labels: distributionLabels,
+                datasets: [{
+                    label: 'Jumlah Aplikasi',
+                    data: distributionCounts,
+                    backgroundColor: distributionColors,
+                    borderColor: distributionColors,
+                    borderWidth: 1,
+                    onClick: (evt, elements) => {
+                        if(elements.length > 0) {
+                            const bucketLabel = distributionLabels[elements[0].index];
+                            showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Aplikasi dengan TAT: ${bucketLabel}`);
+                        }
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (evt, elements) => {
+                    if(elements.length > 0) {
+                        const bucketLabel = distributionLabels[elements[0].index];
+                        showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Aplikasi dengan TAT: ${bucketLabel}`);
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Jumlah Aplikasi'
+                        },
+                        ticks: {
+                            precision: 0,
+                            callback: function(value) {
+                                if (value % 1 === 0) {
+                                    return value;
+                                }
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Rentang Waktu TAT'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const bucketLabel = distributionLabels[context.dataIndex];
+                                const bucketData = tatDistributionData[bucketLabel];
+                                const percent = ((bucketData.cnt / e2eData.length) * 100).toFixed(1);
+                                
+                                return [
+                                    `Total Apps: ${bucketData.cnt} (${percent}%)`,
+                                    `Apps dengan Limit > 0: ${bucketData.cntPositiveLimit}`,
+                                    `Total Limit (hanya >0): ${formatIDR(bucketData.limPositive)}`
+                                ];
+                            },
+                            afterTitle: function(context) {
+                                const bucket = tatBuckets.find(b => b.label === context[0].label);
+                                if (bucket) {
+                                    return `Range: ${bucket.min === 0 ? '0' : bucket.min} - ${bucket.max === Infinity ? '∞' : bucket.max} hari`;
+                                }
+                                return '';
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Update distribution chart info
+        const distChartInfo = document.getElementById('distChartInfo');
+        distChartInfo.innerHTML = 
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Sekarang bucket pertama adalah <7 hari (bukan <8 hari). Total 6 bucket distribusi. Total Limit hanya dihitung dari aplikasi dengan limit > 0 dalam setiap bucket</span>`;
+
+        // PERBAIKAN: Status buckets for outlier analysis - SAMAKAN PERHITUNGAN DENGAN TOP BOTTLENECKS
+        statusBuckets = {};
+        Object.keys(statusAgg).forEach(k => {
+            const [id, st] = k.split("##");
+            if(!statusBuckets[st]) statusBuckets[st] = [];
+            statusBuckets[st].push({ tat: statusAgg[k], app: apps[id] });
+        });
+        
+        statusOutliers = {};
+        statusStats = {}; // Reset status stats
+        
+        const stMetrics = Object.keys(statusBuckets).map(st => {
+            const arr = statusBuckets[st].map(x=>x.tat);
+            const s = calcStats(arr);
+            statusStats[st] = s; // Store stats for each status
+            statusOutliers[st] = statusBuckets[st].filter(x=>x.tat > s.high).map(x=>({...x.app, tat:x.tat}));
+            
+            // Hitung IQR dan Boundary untuk setiap status
+            const iqr = s.q3 - s.q1;
+            const boundary = s.high;
+            
+            return { 
+                stat:st, 
+                ...s,
+                iqr: iqr,
+                boundary: boundary
+            };
+        });
+
+        // Status table - DITAMBAHKAN KOLOM IQR DAN BOUNDARY
+        document.getElementById('tblStatus').innerHTML = stMetrics.map(x => {
+            const iqrColor = x.iqr > (globalStats.q3 - globalStats.q1) ? 'text-warning' : 'text-success';
+            const boundaryColor = x.boundary > globalStats.high ? 'text-warning' : 'text-success';
+            
+            return `
+                <tr>
+                    <td class="text-start">${x.stat}</td>
+                    <td>${x.avg.toFixed(1)}</td>
+                    <td class="text-muted small">${x.q1.toFixed(1)}</td>
+                    <td class="fw-bold">${x.med.toFixed(1)}</td>
+                    <td class="text-muted small">${x.q3.toFixed(1)}</td>
+                    <td class="iqr-cell ${iqrColor}">${x.iqr.toFixed(1)}</td>
+                    <td class="boundary-cell ${boundaryColor}">${x.boundary.toFixed(1)}</td>
+                    <td class="text-center">
+                        <span class="badge-out" onclick="showOutliersModal('status', '${x.stat}')">${x.out}</span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // Top Bottlenecks Chart - PERBAIKAN: Buat chart yang bisa diklik
+        const slow = stMetrics.sort((a,b)=>b.avg-a.avg).slice(0,10);
+        bottleneckChartData = slow; // Simpan untuk akses nanti
+        
+        if(charts.cSlow) charts.cSlow.destroy();
+        charts.cSlow = new Chart(document.getElementById('cSlow'), {
+            type: 'bar',
+            data: {
+                labels: slow.map(x=>x.stat),
+                datasets: [{
+                    label: 'Avg TAT', 
+                    data: slow.map(x=>x.avg), 
+                    backgroundColor: '#ef4444', 
+                    borderColor: '#ef4444',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y', 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                onClick: (evt, elements) => {
+                    if(elements.length > 0) {
+                        const index = elements[0].index;
+                        const status = slow[index].stat;
+                        showBottleneckDetail(status);
+                    }
+                },
+                plugins: {legend: {display: false}}
+            }
+        });
+
+        // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps dengan limit > 0, GUNAKAN PURPOSE NORMALIZED
+        const prp={}; const prpC={}; const prpPositiveCount={};
+        e2eData.forEach(d => { 
+            if (d.limit > 0) {
+                const normPurp = d.purpNormalized || normalizePurpose(d.purp);
+                prp[normPurp] = (prp[normPurp] || 0) + d.tat; 
+                prpPositiveCount[normPurp] = (prpPositiveCount[normPurp] || 0) + 1; 
+            }
+        });
+        const pL = Object.keys(prp);
+        if(charts.cPurp) charts.cPurp.destroy();
+        charts.cPurp = new Chart(document.getElementById('cPurp'), {
+            type: 'bar',
+            data: {
+                labels: pL, 
+                datasets: [{
+                    label: 'Avg TAT (hanya limit > 0)', 
+                    data: pL.map(k=>prp[k]/prpPositiveCount[k]), 
+                    backgroundColor: '#6366f1', 
+                    borderColor: '#6366f1', 
+                    borderWidth: 1,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                indexAxis: 'y', 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: {legend: {display: false}}
+            }
+        });
+
+        // PERUBAHAN BESAR: Scatter Chart dengan 5 KATEGORI - GUNAKAN NORMALIZED PURPOSE
+        // Ambil unique purpose yang sudah dinormalisasi dan urutkan
+        const uPurp = [...new Set(e2eData.map(d => d.purpNormalized || normalizePurpose(d.purp)))].sort();
+        
+        console.log("Unique normalized purposes:", uPurp);
+        console.log("Number of unique purposes:", uPurp.length);
+        
+        // Buat 5 dataset untuk scatter chart
+        const ds = [
+            {label: '< Q1', data:[], backgroundColor:'#10b981', pointStyle:'circle', pointRadius: 5},
+            {label: 'Q1 - Median', data:[], backgroundColor:'#27D6F5', pointStyle:'circle', pointRadius: 5},
+            {label: 'Median - Q3', data:[], backgroundColor:'#3b82f6', pointStyle:'circle', pointRadius: 5},
+            {label: 'Q3 - Boundary', data:[], backgroundColor:'#f59e0b', pointStyle:'circle', pointRadius: 5},
+            {label: '> Boundary (Outlier)', data:[], backgroundColor:'#ef4444', pointStyle:'triangle', pointRadius: 7}
+        ];
+        
+        e2eData.forEach(d => {
+            // Gunakan normalized purpose
+            const normPurp = d.purpNormalized || normalizePurpose(d.purp);
+            
+            let datasetIndex;
+            const tat = d.tat;
+            
+            if (tat < globalStats.q1) {
+                datasetIndex = 0; // < Q1
+            } else if (tat < globalStats.med) {
+                datasetIndex = 1; // Q1 - Median
+            } else if (tat < globalStats.q3) {
+                datasetIndex = 2; // Median - Q3
+            } else if (tat <= globalStats.high) {
+                datasetIndex = 3; // Q3 - Boundary
+            } else {
+                datasetIndex = 4; // Outlier
+            }
+            
+            // Temukan index purpose di array unique purpose
+            const yIndex = uPurp.indexOf(normPurp);
+            
+            // Jika tidak ditemukan (seharusnya tidak terjadi), default ke 0
+            const yPosition = yIndex >= 0 ? yIndex + 0.5 : 0.5;
+            
+            ds[datasetIndex].data.push({ 
+                x: d.tat, 
+                y: yPosition,
+                full: d 
+            });
+        });
+        
+        // Update legend di atas scatter chart
+        const scatterLegend = document.getElementById('scatterLegend');
+        scatterLegend.innerHTML = `
+            <div class="scatter-legend">
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} hari</div>
+            </div>
+        `;
+        
+        if(charts.sc) charts.sc.destroy();
+        charts.sc = new Chart(document.getElementById('cScatter'), {
+            type: 'scatter', 
+            data: { datasets: ds },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                onClick: (e, items) => { 
+                    if(items && items.length > 0){ 
+                        const datasetIndex = items[0].datasetIndex;
+                        const dataIndex = items[0].index;
+                        const pt = ds[datasetIndex].data[dataIndex];
+                        const app = pt.full;
+                        
+                        // Tampilkan detail aplikasi
+                        showSingleAppDetail(app);
+                    } 
+                },
+                scales: { 
+                    x: {
+                        title: {display:true, text:'Hari (E2E)'},
+                        min: 0,
+                        suggestedMax: Math.max(...e2eData.map(d => d.tat)) * 1.1,
+                        afterBuildTicks: function(axis) {
+                            // Tambahkan garis referensi untuk kuartil
+                            if (!axis.ticks.some(t => t.value === globalStats.q1)) {
+                                axis.ticks.push({value: globalStats.q1, label: `Q1: ${globalStats.q1.toFixed(1)}`});
+                            }
+                            if (!axis.ticks.some(t => t.value === globalStats.med)) {
+                                axis.ticks.push({value: globalStats.med, label: `Median: ${globalStats.med.toFixed(1)}`});
+                            }
+                            if (!axis.ticks.some(t => t.value === globalStats.q3)) {
+                                axis.ticks.push({value: globalStats.q3, label: `Q3: ${globalStats.q3.toFixed(1)}`});
+                            }
+                            if (!axis.ticks.some(t => t.value === globalStats.high)) {
+                                axis.ticks.push({value: globalStats.high, label: `Boundary: ${globalStats.high.toFixed(1)}`});
+                            }
+                        },
+                        grid: {
+                            color: function(context) {
+                                // Warna garis grid berbeda untuk setiap kuartil
+                                if (context.tick.value === globalStats.q1) {
+                                    return '#10b981';
+                                } else if (context.tick.value === globalStats.med) {
+                                    return '#3b82f6';
+                                } else if (context.tick.value === globalStats.q3) {
+                                    return '#f59e0b';
+                                } else if (context.tick.value === globalStats.high) {
+                                    return '#ef4444';
+                                }
+                                return '#e2e8f0';
+                            },
+                            lineWidth: function(context) {
+                                if ([globalStats.q1, globalStats.med, globalStats.q3, globalStats.high].includes(context.tick.value)) {
+                                    return 2;
+                                }
+                                return 1;
+                            },
+                            borderDash: function(context) {
+                                if ([globalStats.q1, globalStats.med, globalStats.q3, globalStats.high].includes(context.tick.value)) {
+                                    return [3, 3];
+                                }
+                                return [];
+                            }
+                        }
+                    }, 
+                    y: {
+                        ticks: {
+                            // PERBAIKAN PENTING: Hanya tampilkan label untuk nilai integer (0, 1, 2, ...)
+                            // bukan untuk setiap nilai desimal (0.5, 1.5, ...)
+                            callback: function(value, index, values) {
+                                // Hanya tampilkan label untuk nilai integer
+                                if (value % 1 === 0.5) {
+                                    const purposeIndex =  Math.floor(value);
+                                    if (purposeIndex >= 0 && purposeIndex < uPurp.length) {
+                                        return uPurp[purposeIndex];
+                                    }
+                                }
+                                return '';
+                            },
+                            // Atur step size menjadi 1 agar hanya nilai integer yang ditampilkan
+                            stepSize: 0.5
+                        }, 
+                        min: 0, 
+                        max: uPurp.length,
+                        title: {
+                            display: true,
+                            text: 'Purpose'
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    } 
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const app = ds[context.datasetIndex].data[context.dataIndex].full;
+                                const normPurp = app.purpNormalized || normalizePurpose(app.purp);
+                                const isOutlier = app.tat > globalStats.high;
+                                const iqr = globalStats.q3 - globalStats.q1;
+                                const boundary = globalStats.high;
+                                const limitStatus = app.limit > 0 ? 
+                                    `Limit: ${formatIDR(app.limit)} (Positif)` : 
+                                    `Limit: ${formatIDR(app.limit)} (Tidak dihitung dalam total)`;
+                                
+                                // Tentukan kategori berdasarkan dataset
+                                let category = "";
+                                let categoryDesc = "";
+                                switch(context.datasetIndex) {
+                                    case 0: 
+                                        category = "< Q1";
+                                        categoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} hari)`;
+                                        break;
+                                    case 1: 
+                                        category = "Q1 - Median";
+                                        categoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} ≤ TAT < ${globalStats.med.toFixed(1)} hari)`;
+                                        break;
+                                    case 2: 
+                                        category = "Median - Q3";
+                                        categoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} ≤ TAT < ${globalStats.q3.toFixed(1)} hari)`;
+                                        break;
+                                    case 3: 
+                                        category = "Q3 - Boundary";
+                                        categoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} ≤ TAT ≤ ${boundary.toFixed(1)} hari)`;
+                                        break;
+                                    case 4: 
+                                        category = "Outlier";
+                                        categoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} hari)`;
+                                        break;
+                                }
+                                
+                                // Tampilkan purpose asli dan normalized
+                                let purposeInfo = `Purpose: ${app.purpOriginal || app.purp}`;
+                                if ((app.purpOriginal || app.purp).toLowerCase() !== normPurp.toLowerCase()) {
+                                    purposeInfo += ` (Normalized: ${normPurp})`;
+                                }
+                                
+                                return [
+                                    `App ID: ${app.id}`,
+                                    `Branch: ${app.branch}`,
+                                    purposeInfo,
+                                    `TAT: ${app.tat.toFixed(1)} hari`,
+                                    `Kategori: ${category}`,
+                                    categoryDesc,
+                                    limitStatus,
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5×${iqr.toFixed(1)} = ${boundary.toFixed(1)} hari`
+                                ];
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        onClick: function(e, legendItem, legend) {
+                            return; // Nonaktifkan toggle legend
+                        },
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // NEW: TAT vs Loan Size Scatter Chart
+        createLoanSizeScatterChart(e2eData, globalStats);
+    }
+
+    // NEW FUNCTION: Create TAT vs Loan Size Scatter Chart
+    function createLoanSizeScatterChart(e2eData, globalStats) {
+        // Filter hanya aplikasi dengan limit > 0
+        const filteredData = e2eData.filter(app => app.limit > 0);
+        
+        if (filteredData.length === 0) {
+            document.getElementById('loanSizeLegend').innerHTML = 
+                '<div class="alert alert-warning p-2 mb-2">Tidak ada data aplikasi dengan limit > 0 untuk ditampilkan.</div>';
+            return;
+        }
+        
+        // Buat 5 dataset untuk scatter chart berdasarkan kategori TAT
+        const loanSizeDatasets = [
+            {label: '< Q1', data:[], backgroundColor:'#10b981', pointStyle:'circle', pointRadius: 5},
+            {label: 'Q1 - Median', data:[], backgroundColor:'#27D6F5', pointStyle:'circle', pointRadius: 5},
+            {label: 'Median - Q3', data:[], backgroundColor:'#3b82f6', pointStyle:'circle', pointRadius: 5},
+            {label: 'Q3 - Boundary', data:[], backgroundColor:'#f59e0b', pointStyle:'circle', pointRadius: 5},
+            {label: '> Boundary (Outlier)', data:[], backgroundColor:'#ef4444', pointStyle:'triangle', pointRadius: 7}
+        ];
+        
+        // Group data berdasarkan kategori loan size
+        filteredData.forEach(app => {
+            let datasetIndex;
+            const tat = app.tat;
+            
+            if (tat < globalStats.q1) {
+                datasetIndex = 0; // < Q1
+            } else if (tat < globalStats.med) {
+                datasetIndex = 1; // Q1 - Median
+            } else if (tat < globalStats.q3) {
+                datasetIndex = 2; // Median - Q3
+            } else if (tat <= globalStats.high) {
+                datasetIndex = 3; // Q3 - Boundary
+            } else {
+                datasetIndex = 4; // Outlier
+            }
+            
+            // Tentukan kategori loan size
+            let loanSizeCategoryIndex = 0;
+            for (let i = 0; i < loanSizeBuckets.length; i++) {
+                if (app.limit >= loanSizeBuckets[i].min && app.limit <= loanSizeBuckets[i].max) {
+                    loanSizeCategoryIndex = i;
+                    break;
+                }
+            }
+            
+            loanSizeDatasets[datasetIndex].data.push({ 
+                x: loanSizeCategoryIndex + 0.5, // Posisi X berdasarkan kategori loan size
+                y: app.tat, // Posisi Y adalah TAT
+                full: app 
+            });
+        });
+        
+        // Update legend untuk loan size chart
+        const loanSizeLegend = document.getElementById('loanSizeLegend');
+        loanSizeLegend.innerHTML = `
+            <div class="scatter-legend">
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} hari)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} hari</div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Sumbu X: Kategori Loan Size (${loanSizeBuckets.map(b => b.label).join(', ')})</small>
+            </div>
+        `;
+        
+        // Destroy existing chart if exists
+        if(charts.loanSize) charts.loanSize.destroy();
+        
+        // Buat chart scatter untuk TAT vs Loan Size
+        charts.loanSize = new Chart(document.getElementById('cLoanSize'), {
+            type: 'scatter', 
+            data: { datasets: loanSizeDatasets },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                onClick: (e, items) => { 
+                    if(items && items.length > 0){ 
+                        const datasetIndex = items[0].datasetIndex;
+                        const dataIndex = items[0].index;
+                        const pt = loanSizeDatasets[datasetIndex].data[dataIndex];
+                        const app = pt.full;
+                        
+                        // Tampilkan detail aplikasi
+                        showSingleAppDetail(app);
+                    } 
+                },
+                scales: { 
+                    x: {
+                        title: {display:true, text:'Loan Size Category'},
+                        min: 0,
+                        max: loanSizeBuckets.length,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 0 && value < loanSizeBuckets.length) {
+                                    return loanSizeBuckets[Math.floor(value)].label;
+                                }
+                                return '';
+                            },
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: '#e2e8f0'
+                        }
+                    }, 
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'TAT (Hari)'
+                        },
+                        beginAtZero: true,
+                        // Buat skala Y dinamis berdasarkan data
+                        suggestedMax: Math.max(...filteredData.map(d => d.tat)) * 1.1,
+                        ticks: {
+                            // Buat kelipatan 50 atau dinamis berdasarkan range data
+                            callback: function(value) {
+                                // Jika nilai lebih dari 1000, tampilkan dengan format yang lebih sederhana
+                                if (value > 1000) {
+                                    return Math.round(value/100) * 100;
+                                }
+                                // Jika nilai antara 100-1000, kelipatan 50
+                                if (value > 100) {
+                                    return Math.round(value/50) * 50;
+                                }
+                                // Jika nilai kecil, tampilkan apa adanya
+                                return value;
+                            }
+                        },
+                        grid: {
+                            color: function(context) {
+                                // Warna garis grid berbeda untuk setiap kuartil
+                                if (context.tick.value === globalStats.q1) {
+                                    return '#10b981';
+                                } else if (context.tick.value === globalStats.med) {
+                                    return '#3b82f6';
+                                } else if (context.tick.value === globalStats.q3) {
+                                    return '#f59e0b';
+                                } else if (context.tick.value === globalStats.high) {
+                                    return '#ef4444';
+                                }
+                                return '#e2e8f0';
+                            },
+                            lineWidth: function(context) {
+                                if ([globalStats.q1, globalStats.med, globalStats.q3, globalStats.high].includes(context.tick.value)) {
+                                    return 2;
+                                }
+                                return 1;
+                            },
+                            borderDash: function(context) {
+                                if ([globalStats.q1, globalStats.med, globalStats.q3, globalStats.high].includes(context.tick.value)) {
+                                    return [3, 3];
+                                }
+                                return [];
+                            }
+                        }
+                    } 
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const app = loanSizeDatasets[context.datasetIndex].data[context.dataIndex].full;
+                                const isOutlier = app.tat > globalStats.high;
+                                const iqr = globalStats.q3 - globalStats.q1;
+                                const boundary = globalStats.high;
+                                
+                                // Tentukan kategori loan size
+                                let loanSizeCategory = '';
+                                for (let bucket of loanSizeBuckets) {
+                                    if (app.limit >= bucket.min && app.limit <= bucket.max) {
+                                        loanSizeCategory = bucket.label;
+                                        break;
+                                    }
+                                }
+                                
+                                // Tentukan kategori TAT
+                                let tatCategory = "";
+                                let tatCategoryDesc = "";
+                                switch(context.datasetIndex) {
+                                    case 0: 
+                                        tatCategory = "< Q1";
+                                        tatCategoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} hari)`;
+                                        break;
+                                    case 1: 
+                                        tatCategory = "Q1 - Median";
+                                        tatCategoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} ≤ TAT < ${globalStats.med.toFixed(1)} hari)`;
+                                        break;
+                                    case 2: 
+                                        tatCategory = "Median - Q3";
+                                        tatCategoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} ≤ TAT < ${globalStats.q3.toFixed(1)} hari)`;
+                                        break;
+                                    case 3: 
+                                        tatCategory = "Q3 - Boundary";
+                                        tatCategoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} ≤ TAT ≤ ${boundary.toFixed(1)} hari)`;
+                                        break;
+                                    case 4: 
+                                        tatCategory = "Outlier";
+                                        tatCategoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} hari)`;
+                                        break;
+                                }
+                                
+                                return [
+                                    `App ID: ${app.id}`,
+                                    `Branch: ${app.branch}`,
+                                    `Purpose: ${app.purp}`,
+                                    `Limit: ${formatIDR(app.limit)} (${loanSizeCategory})`,
+                                    `TAT: ${app.tat.toFixed(1)} hari`,
+                                    `Kategori TAT: ${tatCategory}`,
+                                    tatCategoryDesc,
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5×${iqr.toFixed(1)} = ${boundary.toFixed(1)} hari`
+                                ];
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        onClick: function(e, legendItem, legend) {
+                            return; // Nonaktifkan toggle legend
+                        },
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // PERBAIKAN: Ganti parameter 'stats' menjadi 'globalStats'
+    function calculateQuartileApplications(e2eData, globalStats) {
+        q1Apps = [];
+        medianApps = [];
+        q3Apps = [];
+        
+        const q1Range = globalStats.q1;
+        const medianRange = globalStats.med;
+        const q3Range = globalStats.q3;
+        
+        const tolerance = Math.max(0.5, q1Range * 0.1);
+        
+        q1Apps = e2eData.filter(app => Math.abs(app.tat - q1Range) <= tolerance);
+        medianApps = e2eData.filter(app => Math.abs(app.tat - medianRange) <= tolerance);
+        q3Apps = e2eData.filter(app => Math.abs(app.tat - q3Range) <= tolerance);
+        
+        console.log(`Q1 Apps: ${q1Apps.length}, Median Apps: ${medianApps.length}, Q3 Apps: ${q3Apps.length}`);
+    }
+
+    function calcStats(arr) {
+        if(!arr.length) return { avg:0, med:0, q1:0, q3:0, out:0, high:0, mod: 0, iqr: 0, boundary: 0 };
+        const s = [...arr].sort((a,b)=>a-b);
+        const q = p => { let i=(s.length-1)*p, b=Math.floor(i), r=i-b; return s[b] + r*(s[b+1]?s[b+1]-s[b]:0); };
+        const q1=q(0.25), q3=q(0.75), iqr=q3-q1;
+        const avg = arr.reduce((a,b)=>a+b,0)/arr.length;
+        
+        const f = {}; let mf = 0; 
+        arr.forEach(x => { let k = Math.round(x); f[k] = (f[k] || 0) + 1; if(f[k] > mf) mf = f[k]; });
+        const mod = Object.keys(f).filter(k => f[k] == mf)[0] || 0;
+        
+        const boundary = q3 + 1.5 * iqr;
+
+        return { 
+            avg, 
+            med: q(0.5), 
+            q1, 
+            q3, 
+            iqr: iqr,
+            high: boundary, 
+            boundary: boundary,
+            out: arr.filter(x=>x > boundary).length, 
+            mod 
+        };
+    }
+
+    function formatIDR(n) {
+        if (isNaN(n) || n === 0) return "0";
+        if (n < 0) return `-${formatIDR(Math.abs(n))}`;
+        if (n >= 1e12) return (n/1e12).toFixed(1) + " T";
+        if (n >= 1e9) return (n/1e9).toFixed(1) + " M";
+        if (n >= 1e6) return (n/1e6).toFixed(1) + " Jt";
+        if (n >= 1e3) return (n/1e3).toFixed(1) + " Rb";
+        return n.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    function showAppsInRange(type, apps) {
+        let title = "";
+        let infoText = "";
+        let headerColor = "";
+        
+        switch(type) {
+            case 'q1':
+                title = "Aplikasi di Quartile 1 (25%)";
+                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vQ1').innerText} hari (Q1)`;
+                headerColor = "#3b82f6";
+                break;
+            case 'median':
+                title = "Aplikasi di Median (50%)";
+                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vMed').innerText} hari (Median)`;
+                headerColor = "#8b5cf6";
+                break;
+            case 'q3':
+                title = "Aplikasi di Quartile 3 (75%)";
+                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vQ3').innerText} hari (Q3)`;
+                headerColor = "#f59e0b";
+                break;
+        }
+        
+        showDetailModal(type, apps, title, headerColor, infoText);
+    }
+
+    function showOutliersModal(type, status = null) {
+        let apps = [];
+        let title = "";
+        let headerColor = "#ef4444";
+        let infoText = "";
+        
+        if(type === 'global') {
+            apps = globalOutliers;
+            title = "Global Outliers (E2E)";
+            infoText = `Menampilkan ${apps.length} aplikasi outlier (TAT > Q3 + 1.5×IQR = ${globalStats.high.toFixed(1)} hari)`;
+        } else if(type === 'status' && status) {
+            apps = statusOutliers[status] || [];
+            const stats = statusStats[status] || {};
+            const boundary = stats.boundary || globalStats.high;
+            title = `Outlier pada Status: ${status}`;
+            infoText = `Menampilkan ${apps.length} aplikasi outlier untuk status "${status}" (TAT > ${boundary.toFixed(1)} hari)`;
+        } else if(type === 'scatter') {
+            apps = globalOutliers;
+            title = "Semua Outlier (Scatter Plot)";
+            infoText = `Menampilkan ${apps.length} aplikasi outlier berdasarkan scatter plot`;
+        }
+        
+        showDetailModal('outlier', apps, title, headerColor, infoText);
+    }
+
+    // PERBAIKAN: Fungsi untuk mencegah scroll pada body ketika modal terbuka
+    function disableBodyScroll() {
+        document.body.classList.add('body-modal-open');
+        document.querySelector('.main-wrap')?.classList.add('modal-blur');
+    }
+    
+    function enableBodyScroll() {
+        document.body.classList.remove('body-modal-open');
+        document.querySelector('.main-wrap')?.classList.remove('modal-blur');
+    }
+
+    function showSingleAppDetail(app) {
+        if (!app) return;
+        
+        const isOutlier = app.tat > globalStats.high;
+        const daysAboveQ3 = app.tat - globalStats.q3;
+        const daysAboveOutlierBoundary = app.tat - globalStats.high;
+        
+        // Calculate percentile
+        const sortedTats = e2eData.map(d => d.tat).sort((a, b) => a - b);
+        const percentile = ((sortedTats.indexOf(app.tat) / sortedTats.length) * 100).toFixed(1);
+        
+        // PERBAIKAN: Update modal styling berdasarkan status aplikasi (Normal vs Outlier)
+        const modalHeader = document.getElementById('singleAppModalHeader');
+        const alertBox = document.getElementById('singleAppAlert');
+        const infoCard = document.getElementById('singleAppInfoCard');
+        const statCard = document.getElementById('singleAppStatCard');
+        const analysisCard = document.getElementById('singleAppAnalysisCard');
+        const analysisHeader = document.getElementById('singleAppAnalysisHeader');
+        const showAllBtn = document.getElementById('singleAppShowAllBtn');
+        
+        if (isOutlier) {
+            // Styling untuk Outlier
+            modalHeader.className = 'modal-header bg-danger text-white';
+            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>Detail Aplikasi Outlier`;
+            
+            alertBox.className = 'alert alert-warning py-2 mb-3';
+            alertBox.querySelector('i').className = 'bi bi-exclamation-triangle me-2';
+            
+            infoCard.className = 'card border-danger h-100';
+            infoCard.querySelector('.card-title').className = 'card-title text-danger fw-bold mb-3';
+            
+            statCard.className = 'card border-warning h-100';
+            statCard.querySelector('.card-title').className = 'card-title text-warning fw-bold mb-3';
+            
+            analysisCard.className = 'card border-info';
+            analysisHeader.className = 'card-header bg-info text-white py-2';
+            
+            showAllBtn.style.display = 'inline-block';
+            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier`;
+            showAllBtn.onclick = function() { showAllOutliersFromSingle(); };
+        } else {
+            // Styling untuk Normal
+            modalHeader.className = 'modal-header bg-primary text-white';
+            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-file-earmark-text me-2"></i>Detail Aplikasi Normal`;
+            
+            alertBox.className = 'alert alert-info py-2 mb-3';
+            alertBox.querySelector('i').className = 'bi bi-info-circle me-2';
+            
+            infoCard.className = 'card border-primary h-100';
+            infoCard.querySelector('.card-title').className = 'card-title text-primary fw-bold mb-3';
+            
+            statCard.className = 'card border-success h-100';
+            statCard.querySelector('.card-title').className = 'card-title text-success fw-bold mb-3';
+            
+            analysisCard.className = 'card border-secondary';
+            analysisHeader.className = 'card-header bg-secondary text-white py-2';
+            
+            showAllBtn.style.display = 'inline-block';
+            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier`;
+            showAllBtn.onclick = function() { showAllOutliersFromSingle(); };
+        }
+        
+        // Update modal content
+        document.getElementById('singleAppId').textContent = app.id;
+        document.getElementById('singleAppBranch').textContent = app.branch;
+        document.getElementById('singleAppPurpose').textContent = app.purpOriginal || app.purp;
+        document.getElementById('singleAppSegment').textContent = app.seg;
+        document.getElementById('singleAppMonth').textContent = app.displayMon || formatMonthDisplay(app.mon);
+        document.getElementById('singleAppTat').textContent = `${app.tat.toFixed(1)} hari`;
+        
+        // Format limit dengan status
+        const limitClass = app.limit > 0 ? 'limit-positive' : (app.limit < 0 ? 'limit-negative' : 'limit-zero');
+        document.getElementById('singleAppLimit').innerHTML = `<span class="${limitClass}">${formatIDR(app.limit)}</span>`;
+        
+        // PERBAIKAN PENTING: Update status berdasarkan apakah aplikasi outlier atau normal
+        if (isOutlier) {
+            document.getElementById('singleAppStatus').innerHTML = `<span class="badge status-outlier">Outlier</span>`;
+            document.getElementById('singleAppTat').className = 'app-detail-value fw-bold text-danger';
+        } else {
+            document.getElementById('singleAppStatus').innerHTML = `<span class="badge status-normal">Normal</span>`;
+            document.getElementById('singleAppTat').className = 'app-detail-value fw-bold text-primary';
+        }
+        
+        document.getElementById('singleAppVsQ3').textContent = isOutlier ? 
+            `${daysAboveQ3.toFixed(1)} hari di atas Q3` : 
+            `${Math.abs(daysAboveQ3).toFixed(1)} hari di bawah Q3`;
+        
+        document.getElementById('singleAppVsOutlierBoundary').textContent = isOutlier ? 
+            `${daysAboveOutlierBoundary.toFixed(1)} hari di atas Boundary` : 
+            `${Math.abs(daysAboveOutlierBoundary).toFixed(1)} hari di bawah Boundary`;
+        
+        document.getElementById('singleAppPercentile').textContent = `${percentile}%`;
+        document.getElementById('singleAppDaysAboveQ3').textContent = `${isOutlier ? daysAboveQ3.toFixed(0) : '0'} hari`;
+        document.getElementById('singleAppDaysAboveOutlierBoundary').textContent = `${isOutlier ? daysAboveOutlierBoundary.toFixed(0) : '0'} hari`;
+        
+        // Tentukan kategori berdasarkan kuartil
+        let quartileCategory = "";
+        if (app.tat < globalStats.q1) {
+            quartileCategory = "< Q1 (25% tercepat)";
+        } else if (app.tat < globalStats.med) {
+            quartileCategory = "Q1 - Median (25-50%)";
+        } else if (app.tat < globalStats.q3) {
+            quartileCategory = "Median - Q3 (50-75%)";
+        } else if (app.tat <= globalStats.high) {
+            quartileCategory = "Q3 - Boundary (75%-Boundary)";
+        } else {
+            quartileCategory = "> Boundary (Outlier)";
+        }
+        
+        // Update analysis text dengan info limit dan status yang benar
+        let analysisText = '';
+        if (isOutlier) {
+            analysisText = `Aplikasi ini termasuk <span class="fw-bold text-danger">OUTLIER</span> (${quartileCategory}) dengan TAT ${app.tat.toFixed(1)} hari (${daysAboveOutlierBoundary.toFixed(1)} hari di atas outlier boundary ${globalStats.high.toFixed(1)} hari)`;
+        } else {
+            analysisText = `Aplikasi ini <span class="fw-bold text-success">NORMAL</span> (${quartileCategory}) dengan TAT ${app.tat.toFixed(1)} hari (${Math.abs(daysAboveOutlierBoundary).toFixed(1)} hari di bawah outlier boundary ${globalStats.high.toFixed(1)} hari)`;
+        }
+        
+        // Tambahkan info limit
+        if (app.limit > 0) {
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="limit-info">(DIHITUNG dalam total portfolio)</span>`;
+        } else if (app.limit < 0) {
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-danger">(TIDAK dihitung - negatif)</span>`;
+        } else {
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-muted">(TIDAK dihitung - nol)</span>`;
+        }
+        
+        document.getElementById('singleAppAnalysisText').innerHTML = analysisText;
+        document.getElementById('singleAppInfoText').innerHTML = analysisText;
+        
+        // Update progress bar visualization
+        const normalWidth = 75;
+        const q3ToBoundaryWidth = Math.min(20, ((globalStats.high - globalStats.q3) / globalStats.high * 100));
+        const outlierWidth = 5;
+        
+        if (isOutlier) {
+            // Untuk outlier, tunjukkan area outlier
+            const outlierPosition = Math.min(100, 75 + q3ToBoundaryWidth + ((app.tat - globalStats.high) / globalStats.high * 20));
+            document.getElementById('singleAppProgressNormal').style.width = `${normalWidth}%`;
+            document.getElementById('singleAppProgressQ3').style.width = `${q3ToBoundaryWidth}%`;
+            document.getElementById('singleAppProgressOutlier').style.width = `${outlierPosition - (normalWidth + q3ToBoundaryWidth)}%`;
+        } else {
+            // Untuk normal, tunjukkan posisi dalam range normal
+            const normalPosition = (app.tat / globalStats.high * 75);
+            document.getElementById('singleAppProgressNormal').style.width = `${normalPosition}%`;
+            document.getElementById('singleAppProgressQ3').style.width = `${q3ToBoundaryWidth}%`;
+            document.getElementById('singleAppProgressOutlier').style.width = `0%`;
+        }
+        
+        if (parseFloat(percentile) > 95) {
+            document.getElementById('singleAppProgressOutlier').classList.add('progress-bar-striped');
+        } else if (parseFloat(percentile) > 75) {
+            document.getElementById('singleAppProgressQ3').classList.add('progress-bar-striped');
+        }
+        
+        // Store current app for navigation
+        window.currentSingleApp = app;
+        
+        // Show modal
+        const modalElement = document.getElementById('singleAppModal');
+        
+        const existingModal = bootstrap.Modal.getInstance(modalElement);
+        if (existingModal) {
+            existingModal.hide();
+        }
+        
+        const existingBackdrop = document.querySelector('.modal-backdrop');
+        if (existingBackdrop) {
+            existingBackdrop.remove();
+        }
+        
+        // PERBAIKAN: Nonaktifkan scroll pada body
+        disableBodyScroll();
+        
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        
+        modal.show();
+        
+        // PERBAIKAN: Event listener untuk mengembalikan scroll ketika modal ditutup
+        modalElement.addEventListener('hidden.bs.modal', function onHidden() {
+            enableBodyScroll();
+            modalElement.removeEventListener('hidden.bs.modal', onHidden);
+        });
+    }
+
+    function showAllOutliersFromSingle() {
+        // Tutup modal single app terlebih dahulu
+        const singleModal = bootstrap.Modal.getInstance(document.getElementById('singleAppModal'));
+        if (singleModal) {
+            singleModal.hide();
+            
+            // PERBAIKAN: Tunggu modal benar-benar tertutup sebelum membuka modal outlier
+            const singleModalElement = document.getElementById('singleAppModal');
+            singleModalElement.addEventListener('hidden.bs.modal', function onHidden() {
+                singleModalElement.removeEventListener('hidden.bs.modal', onHidden);
+                
+                // Hapus backdrop yang mungkin tertinggal
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                
+                // Tampilkan modal outlier
+                showOutliersModal('global');
+            }, { once: true });
+        } else {
+            // Jika modal tidak ditemukan, langsung tampilkan modal outlier
+            showOutliersModal('global');
+        }
+    }
+
+    function showTrendDetail() {
+        const allTrendApps = Object.values(trendData).flatMap(data => data.apps);
+        showDetailModal('trend', allTrendApps, "Semua Aplikasi (Tren)", "#2563eb", 
+            `Menampilkan semua aplikasi dari data tren. Total: ${allTrendApps.length} aplikasi`);
+    }
+
+    function showBranchDetail() {
+        const allBranchApps = Object.values(branchData).flatMap(data => data.apps);
+        showDetailModal('branch', allBranchApps, "Semua Aplikasi (Cabang)", "#06b6d4", "Menampilkan semua aplikasi berdasarkan cabang");
+    }
+
+    function showTatDistributionDetail() {
+        const allDistApps = Object.values(tatDistributionData).flatMap(data => data.apps);
+        showDetailModal('distribution', allDistApps, "Semua Aplikasi (Distribusi TAT)", "#8b5cf6", 
+            `Menampilkan semua aplikasi berdasarkan distribusi TAT. Total: ${allDistApps.length} aplikasi`);
+    }
+
+    function showDetailModal(type, apps, title, headerColor = "#2563eb", infoText = "") {
+        if (!apps || apps.length === 0) {
+            alert("Tidak ada data untuk ditampilkan.");
+            return;
+        }
+        
+        currentDetailType = type;
+        currentDetailData = apps;
+        currentDetailTitle = title;
+        
+        // Update modal header
+        const modalHeader = document.getElementById('detailModalHeader');
+        modalHeader.style.backgroundColor = headerColor;
+        modalHeader.style.color = "white";
+        modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-list-check me-2"></i>${title}`;
+        
+        // Update info text
+        document.getElementById('detailInfoText').innerText = infoText || `Menampilkan ${apps.length} aplikasi`;
+        
+        // Calculate summary metrics - PERBAIKAN: Hanya hitung limit dari apps dengan limit > 0
+        const totalApps = apps.length;
+        const appsWithPositiveLimit = apps.filter(app => app.limit > 0);
+        const appsWithZeroOrNegativeLimit = apps.filter(app => app.limit <= 0);
+        const avgTat = apps.reduce((sum, app) => sum + app.tat, 0) / totalApps;
+        const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
+        const avgLimit = appsWithPositiveLimit.length > 0 ? totalLimit / appsWithPositiveLimit.length : 0;
+        
+        // Update summary cards dengan info limit yang jelas
+        const summaryCardsHTML = `
+            <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                    <div class="card-body p-3 text-center">
+                        <div class="small text-muted">Total Aplikasi</div>
+                        <div class="h4 fw-bold">${totalApps.toLocaleString()}</div>
+                        <div class="small text-muted mt-1">
+                            <span class="limit-info">${appsWithPositiveLimit.length} dengan limit > 0</span><br>
+                            <span class="text-muted">${appsWithZeroOrNegativeLimit.length} tanpa limit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                    <div class="card-body p-3 text-center">
+                        <div class="small text-muted">Rata-rata TAT</div>
+                        <div class="h4 fw-bold">${avgTat.toFixed(1)} hari</div>
+                        <div class="small text-muted mt-1">Semua aplikasi</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                    <div class="card-body p-3 text-center">
+                        <div class="small text-muted">Total Limit (>0)</div>
+                        <div class="h4 fw-bold">${formatIDR(totalLimit)}</div>
+                        <div class="small text-muted mt-1">
+                            <span class="limit-info">Dari ${appsWithPositiveLimit.length} apps</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-light">
+                    <div class="card-body p-3 text-center">
+                        <div class="small text-muted">Avg Limit/App (>0)</div>
+                        <div class="h4 fw-bold">${formatIDR(avgLimit)}</div>
+                        <div class="small text-muted mt-1">Hanya limit positif</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('detailSummaryCards').innerHTML = summaryCardsHTML;
+        
+        // Set table headers dengan kolom status limit
+        let tableHeaders = '';
+        if (type === 'outlier') {
+            tableHeaders = `
+                <tr>
+                    <th>#</th>
+                    <th>App ID</th>
+                    <th>Branch</th>
+                    <th>Purpose</th>
+                    <th>Segment</th>
+                    <th>Limit</th>
+                    <th class="text-end">TAT (Hari)</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            `;
+        } else {
+            tableHeaders = `
+                <tr>
+                    <th>#</th>
+                    <th>App ID</th>
+                    <th>Branch</th>
+                    <th>Purpose</th>
+                    <th>Segment</th>
+                    <th>Limit</th>
+                    <th class="text-end">TAT (Hari)</th>
+                    <th>Month</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            `;
+        }
+        
+        document.getElementById('detailTableHeader').innerHTML = tableHeaders;
+        
+        // Populate table dengan styling limit
+        const tbody = document.getElementById('detailTableBody');
+        tbody.innerHTML = apps.map((app, index) => {
+            let statusCell = '';
+            let actionCell = '';
+            let rowClass = '';
+            
+            const isOutlier = globalOutliers.some(o => o.id === app.id);
+            const isLimitPositive = app.limit > 0;
+            const isLimitZero = app.limit === 0;
+            const isLimitNegative = app.limit < 0;
+            
+            // Determine limit class
+            let limitClass = '';
+            let limitBadge = '';
+            
+            if (isLimitPositive) {
+                limitClass = 'limit-positive';
+                limitBadge = `<span class="limit-info">${formatIDR(app.limit)}</span>`;
+            } else if (isLimitNegative) {
+                limitClass = 'limit-negative';
+                limitBadge = `<span class="badge bg-danger">${formatIDR(app.limit)}</span>`;
+            } else {
+                limitClass = 'limit-zero';
+                limitBadge = `<span class="text-muted">${formatIDR(app.limit)}</span>`;
+            }
+            
+            if (isOutlier) {
+                rowClass = 'highlight-outlier';
+            }
+            
+            // Status cell for non-outlier tables
+            if (type !== 'outlier') {
+                statusCell = `<td>${app.displayMon || formatMonthDisplay(app.mon)}</td>`;
+            } else {
+                statusCell = `<td class="text-center">
+                    <span class="badge ${isOutlier ? 'bg-danger' : 'bg-success'}">
+                        ${isOutlier ? 'Outlier' : 'Normal'}
+                    </span>
+                </td>`;
+            }
+            
+            // Action cell with view button
+            actionCell = `
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewSingleAppDetail('${app.id}')" title="Lihat detail">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            `;
+            
+            return `
+                <tr class="${rowClass}">
+                    <td>${index + 1}</td>
+                    <td><span class="badge bg-light text-dark border">${app.id}</span></td>
+                    <td>${app.branch}</td>
+                    <td>${app.purpOriginal || app.purp}</td>
+                    <td><span class="badge bg-secondary">${app.seg}</span></td>
+                    <td class="${limitClass}">${limitBadge}</td>
+                    <td class="text-end fw-bold">${app.tat.toFixed(1)}</td>
+                    ${statusCell}
+                    ${actionCell}
+                </tr>
+            `;
+        }).join('');
+        
+        // Update footer dengan info limit
+        const limitInfo = appsWithPositiveLimit.length > 0 ? 
+            `Total Limit hanya dihitung dari ${appsWithPositiveLimit.length} aplikasi dengan limit > 0.` : 
+            `Tidak ada aplikasi dengan limit > 0 dalam data ini.`;
+        
+        document.getElementById('detailTableFooter').innerHTML = 
+            `Menampilkan ${apps.length} aplikasi. ${limitInfo} Klik header untuk sort, gunakan search untuk filter, klik ikon mata untuk detail per aplikasi.`;
+        
+        // Show modal
+        const modalElement = document.getElementById('detailModal');
+        
+        const existingModal = bootstrap.Modal.getInstance(modalElement);
+        if (existingModal) {
+            existingModal.hide();
+        }
+        
+        const existingBackdrop = document.querySelector('.modal-backdrop');
+        if (existingBackdrop) {
+            existingBackdrop.remove();
+        }
+        
+        // PERBAIKAN: Nonaktifkan scroll pada body
+        disableBodyScroll();
+        
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        
+        modal.show();
+        
+        // PERBAIKAN: Event listener untuk mengembalikan scroll ketika modal ditutup
+        modalElement.addEventListener('hidden.bs.modal', function onHidden() {
+            enableBodyScroll();
+            modalElement.removeEventListener('hidden.bs.modal', onHidden);
+        });
+    }
+
+    function closeDetailModal() {
+        const modalElement = document.getElementById('detailModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+        
+        // PERBAIKAN: Aktifkan kembali scroll
+        enableBodyScroll();
+    }
+
+    function closeSingleAppModal() {
+        const modalElement = document.getElementById('singleAppModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+        
+        // PERBAIKAN: Aktifkan kembali scroll
+        enableBodyScroll();
+    }
+
+    function viewSingleAppDetail(appId) {
+        const app = e2eData.find(a => a.id === appId);
+        if (app) {
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('detailModal'));
+            if (detailModal) detailModal.hide();
+            
+            setTimeout(() => {
+                showSingleAppDetail(app);
+            }, 300);
+        }
+    }
+
+    function filterDetailTable() {
+        const searchTerm = document.getElementById('detailSearch').value.toLowerCase();
+        const rows = document.getElementById('detailTableBody').getElementsByTagName('tr');
+        
+        for (let row of rows) {
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+        }
+    }
+
+    function exportDetailData() {
+        if (!currentDetailData || currentDetailData.length === 0) {
+            alert("Tidak ada data untuk diexport.");
+            return;
+        }
+        
+        const headers = ["No", "App ID", "Branch", "Purpose", "Segment", "Limit", "Limit Status", "TAT (Hari)", "Month", "Outlier Status"];
+        
+        const csvRows = [
+            [currentDetailTitle],
+            [`Total Aplikasi: ${currentDetailData.length}`],
+            [`Aplikasi dengan limit > 0: ${currentDetailData.filter(app => app.limit > 0).length}`],
+            [],
+            headers
+        ];
+        
+        currentDetailData.forEach((app, index) => {
+            const isOutlier = globalOutliers.some(o => o.id === app.id);
+            const limitStatus = app.limit > 0 ? "Positif (Dihitung)" : 
+                               app.limit < 0 ? "Negatif (Tidak Dihitung)" : 
+                               "Nol (Tidak Dihitung)";
+            
+            csvRows.push([
+                index + 1,
+                app.id,
+                app.branch,
+                app.purpOriginal || app.purp,
+                app.seg,
+                app.limit,
+                limitStatus,
+                app.tat.toFixed(1),
+                app.displayMon || formatMonthDisplay(app.mon),
+                isOutlier ? "Outlier" : "Normal"
+            ]);
+        });
+        
+        const csvContent = csvRows.map(row => row.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${currentDetailType}_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = "hidden";
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // NEW FUNCTION: Show all bottlenecks
+    function showAllBottlenecks() {
+        const allBottleneckApps = [];
+        
+        // Collect all apps from top bottlenecks
+        bottleneckChartData.forEach(status => {
+            if (statusBuckets[status.stat]) {
+                statusBuckets[status.stat].forEach(item => {
+                    allBottleneckApps.push({
+                        ...item.app,
+                        tat: item.tat,
+                        status: status.stat
+                    });
+                });
+            }
+        });
+        
+        showDetailModal('bottleneck', allBottleneckApps, "Semua Aplikasi dari Top Bottlenecks", "#f59e0b", 
+            `Menampilkan semua aplikasi dari top bottlenecks. Total: ${allBottleneckApps.length} aplikasi`);
+    }
+
+    // NEW FUNCTION: Show bottleneck detail - DIPERBAIKI
+    function showBottleneckDetail(status) {
+        // Get data for this status
+        const statusData = statusBuckets[status] || [];
+        
+        if (statusData.length === 0) {
+            alert(`Tidak ada data untuk status: ${status}`);
+            return;
+        }
+        
+        // Update modal title
+        document.getElementById('bottleneckStatusName').textContent = status;
+        
+        // Calculate statistics
+        const totalApps = statusData.length;
+        const tatValues = statusData.map(item => item.tat);
+        const avgTat = tatValues.reduce((sum, tat) => sum + tat, 0) / totalApps;
+        const maxTat = Math.max(...tatValues);
+        const minTat = Math.min(...tatValues);
+        
+        // Get status stats
+        const stats = statusStats[status] || {};
+        
+        // Update summary cards
+        document.getElementById('bottleneckSummaryCards').innerHTML = `
+            <div class="col-md-3">
+                <div class="kpi-card bottleneck-summary-card">
+                    <div class="kpi-title">Total Apps</div>
+                    <div class="kpi-val">${totalApps}</div>
+                    <div class="kpi-sub">dengan status ini</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card bottleneck-summary-card">
+                    <div class="kpi-title">Rata-rata</div>
+                    <div class="kpi-val">${avgTat.toFixed(1)}</div>
+                    <div class="kpi-sub">hari</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card bottleneck-summary-card">
+                    <div class="kpi-title">Maksimum</div>
+                    <div class="kpi-val">${maxTat.toFixed(1)}</div>
+                    <div class="kpi-sub">hari</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="kpi-card bottleneck-summary-card">
+                    <div class="kpi-title">Minimum</div>
+                    <div class="kpi-val">${minTat.toFixed(1)}</div>
+                    <div class="kpi-sub">hari</div>
+                </div>
+            </div>
+        `;
+        
+        // Populate detail table
+        const tableBody = document.getElementById('bottleneckDetailTable');
+        tableBody.innerHTML = statusData.slice(0, 50).map((item, index) => {
+            const app = item.app;
+            const isOutlier = item.tat > (stats.high || globalStats.high);
+            
+            return `
+                <tr ${isOutlier ? 'class="highlight-outlier"' : ''}>
+                    <td>${app.id}</td>
+                    <td>${app.branch}</td>
+                    <td>${app.purpOriginal || app.purp}</td>
+                    <td>${app.seg}</td>
+                    <td class="text-end fw-bold">${item.tat.toFixed(1)}</td>
+                    <td class="text-end">${app.tat?.toFixed(1) || 'N/A'}</td>
+                    <td class="text-end">${formatIDR(app.limit)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewSingleAppDetail('${app.id}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        // Create distribution chart
+        createBottleneckDistributionChart(status, tatValues, stats);
+        
+        // Create limit correlation chart
+        createBottleneckLimitChart(status, statusData);
+        
+        // Show modal dengan perbaikan
+        const modalElement = document.getElementById('bottleneckDetailModal');
+        
+        const existingModal = bootstrap.Modal.getInstance(modalElement);
+        if (existingModal) {
+            existingModal.hide();
+        }
+        
+        const existingBackdrop = document.querySelector('.modal-backdrop');
+        if (existingBackdrop) {
+            existingBackdrop.remove();
+        }
+        
+        // PERBAIKAN: Nonaktifkan scroll pada body
+        disableBodyScroll();
+        
+        const modal = new bootstrap.Modal(modalElement, {
+            backdrop: true,
+            keyboard: true,
+            focus: true
+        });
+        
+        modal.show();
+        
+        // PERBAIKAN: Event listener untuk mengembalikan scroll ketika modal ditutup
+        modalElement.addEventListener('hidden.bs.modal', function onHidden() {
+            enableBodyScroll();
+            modalElement.removeEventListener('hidden.bs.modal', onHidden);
+        });
+    }
+
+    // NEW FUNCTION: Create bottleneck distribution chart
+    function createBottleneckDistributionChart(status, tatValues, stats) {
+        const ctx = document.getElementById('bottleneckDistributionChart').getContext('2d');
+        
+        // Create histogram data
+        const maxVal = Math.max(...tatValues);
+        const binCount = Math.min(10, Math.ceil(tatValues.length / 5));
+        const binSize = Math.ceil(maxVal / binCount);
+        
+        const bins = Array(binCount).fill(0).map((_, i) => ({
+            label: `${i * binSize}-${(i + 1) * binSize}`,
+            count: 0
+        }));
+        
+        tatValues.forEach(tat => {
+            const binIndex = Math.min(binCount - 1, Math.floor(tat / binSize));
+            bins[binIndex].count++;
+        });
+        
+        // Destroy existing chart
+        if (charts.bottleneckDist) charts.bottleneckDist.destroy();
+        
+        charts.bottleneckDist = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: bins.map(b => b.label),
+                datasets: [{
+                    label: 'Jumlah Aplikasi',
+                    data: bins.map(b => b.count),
+                    backgroundColor: '#3b82f6',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Jumlah: ${context.parsed.y} apps`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Jumlah Aplikasi'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Durasi (Hari)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // NEW FUNCTION: Create bottleneck limit correlation chart
+    function createBottleneckLimitChart(status, statusData) {
+        const ctx = document.getElementById('bottleneckLimitChart').getContext('2d');
+        
+        // Filter apps with positive limit
+        const validData = statusData.filter(item => item.app.limit > 0);
+        
+        if (validData.length === 0) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillText("Tidak ada data limit positif", 10, 50);
+            return;
+        }
+        
+        // Prepare scatter plot data
+        const scatterData = validData.map(item => ({
+            x: item.tat,
+            y: item.app.limit,
+            app: item.app
+        }));
+        
+        // Destroy existing chart
+        if (charts.bottleneckLimit) charts.bottleneckLimit.destroy();
+        
+        charts.bottleneckLimit = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'TAT vs Limit',
+                    data: scatterData,
+                    backgroundColor: '#ef4444',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (e, items) => {
+                    if (items && items.length > 0) {
+                        const index = items[0].index;
+                        const app = scatterData[index].app;
+                        showSingleAppDetail(app);
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const app = scatterData[context.dataIndex].app;
+                                return [
+                                    `App ID: ${app.id}`,
+                                    `TAT Status: ${context.parsed.x.toFixed(1)} hari`,
+                                    `Limit: ${formatIDR(app.limit)}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Limit'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return formatIDR(value);
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'TAT Status (Hari)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // NEW FUNCTION: Export bottleneck data
+    function exportBottleneckData() {
+        const statusName = document.getElementById('bottleneckStatusName').textContent;
+        const statusData = statusBuckets[statusName] || [];
+        
+        if (statusData.length === 0) {
+            alert("Tidak ada data untuk diexport.");
+            return;
+        }
+        
+        const headers = ["No", "App ID", "Branch", "Purpose", "Segment", "TAT Status (Hari)", "TAT E2E (Hari)", "Limit", "Status Limit"];
+        
+        const csvRows = [
+            [`Detail Bottleneck: ${statusName}`],
+            [`Total Aplikasi: ${statusData.length}`],
+            [],
+            headers
+        ];
+        
+        statusData.forEach((item, index) => {
+            const app = item.app;
+            const isOutlier = item.tat > (statusStats[statusName]?.high || globalStats.high);
+            const limitStatus = app.limit > 0 ? "Positif" : 
+                               app.limit < 0 ? "Negatif" : 
+                               "Nol";
+            
+            csvRows.push([
+                index + 1,
+                app.id,
+                app.branch,
+                app.purpOriginal || app.purp,
+                app.seg,
+                item.tat.toFixed(1),
+                app.tat?.toFixed(1) || 'N/A',
+                app.limit,
+                limitStatus,
+                isOutlier ? "Outlier" : "Normal"
+            ]);
+        });
+        
+        const csvContent = csvRows.map(row => row.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        
+        const safeStatusName = statusName.replace(/[^a-z0-9]/gi, '_');
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bottleneck_${safeStatusName}_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = "hidden";
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // PERBAIKAN: Event listener untuk semua modal
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listener untuk mencegah scroll pada body ketika modal terbuka
+        document.querySelectorAll('.modal').forEach(function(modalElement) {
+            modalElement.addEventListener('show.bs.modal', function() {
+                disableBodyScroll();
+            });
+            
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                enableBodyScroll();
+                
+                // Hapus backdrop yang mungkin tertinggal
+                setTimeout(function() {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(function(backdrop) {
+                        backdrop.remove();
+                    });
+                }, 100);
+            });
+        });
+    });
+</script>
+</body>
+</html>
