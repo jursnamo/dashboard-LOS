@@ -344,6 +344,40 @@
         .flow-step.high-tat::after {
             background: #ef4444;
         }
+        .flow-gap {
+            min-width: 84px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transform: translateY(-12px);
+        }
+        .flow-gap .gap-line {
+            width: 64px;
+            height: 4px;
+            border-radius: 999px;
+            background: #22c55e;
+            opacity: 0.9;
+        }
+        .flow-gap .gap-days {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #166534;
+            white-space: nowrap;
+        }
+        .flow-gap.warn .gap-line {
+            background: #f59e0b;
+        }
+        .flow-gap.warn .gap-days {
+            color: #b45309;
+        }
+        .flow-gap.danger .gap-line {
+            background: #ef4444;
+        }
+        .flow-gap.danger .gap-days {
+            color: #b91c1c;
+        }
     </style>
 </head>
 <body>
@@ -2696,6 +2730,13 @@ ${userText}`
         }
     }
 
+    function getGapDays(fromMs, toMs) {
+        if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) return null;
+        const diff = (toMs - fromMs) / 86400000;
+        if (!Number.isFinite(diff) || diff < 0) return 0;
+        return Math.round(diff);
+    }
+
     function mkChart(id, type, l, d, lbl, c, ax='x') {
         if(charts[id]) charts[id].destroy();
         charts[id] = new Chart(document.getElementById(id), {
@@ -2923,18 +2964,37 @@ ${userText}`
 
         const flowObj = appFlowEvents[app.id];
         const flowEvents = aggregateFlowEventsByStatusAndCompleteDate(getOrderedFlowEvents(flowObj));
-        document.getElementById('singleAppFlowTimeline').innerHTML = flowEvents.length
-            ? flowEvents.map((ev, idx) => `
-                <div class="flow-step ${safeNum(ev.duration, 0) > 5 ? 'high-tat' : ''}">
-                    <div class="step-index">${idx + 1}</div>
-                    <div class="step-node">${ev.status || 'Unknown'}</div>
-                    <div class="step-meta">
-                        Complete: ${formatDateDisplay(ev.completeMs)}<br>
-                        TAT (SUM): ${safeNum(ev.duration, 0).toFixed(1)} hari${ev.count > 1 ? `<br><span class="text-muted">Gabung ${ev.count} step</span>` : ''}
+        if (flowEvents.length) {
+            const timelineHtml = [];
+            flowEvents.forEach((ev, idx) => {
+                timelineHtml.push(`
+                    <div class="flow-step ${safeNum(ev.duration, 0) > 5 ? 'high-tat' : ''}">
+                        <div class="step-index">${idx + 1}</div>
+                        <div class="step-node">${ev.status || 'Unknown'}</div>
+                        <div class="step-meta">
+                            Complete: ${formatDateDisplay(ev.completeMs)}<br>
+                            TAT (SUM): ${safeNum(ev.duration, 0).toFixed(1)} hari${ev.count > 1 ? `<br><span class="text-muted">Gabung ${ev.count} step</span>` : ''}
+                        </div>
                     </div>
-                </div>
-            `).join('')
-            : `<div class="small text-muted">Data flow belum tersedia</div>`;
+                `);
+                if (idx < flowEvents.length - 1) {
+                    const next = flowEvents[idx + 1];
+                    const gapDays = getGapDays(ev.completeMs, next.completeMs);
+                    if (gapDays !== null) {
+                        const gapClass = gapDays > 10 ? 'danger' : (gapDays > 5 ? 'warn' : '');
+                        timelineHtml.push(`
+                            <div class="flow-gap ${gapClass}">
+                                <div class="gap-days">${gapDays} Days</div>
+                                <div class="gap-line"></div>
+                            </div>
+                        `);
+                    }
+                }
+            });
+            document.getElementById('singleAppFlowTimeline').innerHTML = timelineHtml.join('');
+        } else {
+            document.getElementById('singleAppFlowTimeline').innerHTML = `<div class="small text-muted">Data flow belum tersedia</div>`;
+        }
         
         // Update progress bar visualization
         const normalWidth = 75;
