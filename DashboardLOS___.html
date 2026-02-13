@@ -46,6 +46,10 @@
 
         .chart-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; height: 100%; box-shadow: 0 2px 5px rgba(0,0,0,0.01); }
         .chart-head { font-weight: 700; color: #334155; margin-bottom: 15px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+        .chart-card, .chart-card * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
         
         .table-custom { font-size: 0.75rem; width: 100%; }
         .table-custom th { background: #f8fafc; padding: 10px; border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; }
@@ -58,6 +62,26 @@
         
         .chart-clickable { cursor: pointer; }
         .chart-clickable:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        canvas {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+            touch-action: none;
+        }
+        #bottleneckLoanSizeChart,
+        #bottleneckLoopFreqChart {
+            user-select: none;
+            -webkit-user-drag: none;
+            touch-action: none;
+            cursor: crosshair;
+            pointer-events: none;
+        }
+        #bottleneckDetailModal .modal-body,
+        #bottleneckDetailModal .modal-body * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-user-drag: none;
+        }
         
         /* Single App Modal */
         .app-detail-row { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
@@ -290,7 +314,10 @@
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="chart-card border-danger">
-                    <div class="chart-head text-danger">Top Bottlenecks</div>
+                    <div class="chart-head text-danger d-flex justify-content-between">
+                        <span>Top Bottlenecks</span>
+                        <span class="small text-warning" id="tatImpactTotal"></span>
+                    </div>
                     <div style="height: 280px;"><canvas id="cSlow"></canvas></div>
                 </div>
             </div>
@@ -498,7 +525,7 @@
 </div>
 <!-- Tambahkan di akhir file sebelum </body> -->
 <div class="modal fade" id="bottleneckDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 96vw; width: 96vw;">
         <div class="modal-content">
             <div class="modal-header bg-warning text-white">
                 <h5 class="modal-title" id="bottleneckModalLabel">
@@ -507,48 +534,73 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- Summary Stats -->
-                <div class="row mb-4" id="bottleneckSummaryCards">
+                <div class="alert alert-light border mb-3 py-2">
+                    <div class="small"><strong>Status:</strong> <span id="bottleneckStatusHeader">-</span></div>
+                    <div class="small"><strong>Period:</strong> <span id="bottleneckPeriodText">-</span></div>
+                </div>
+
+                <h6 class="section-title">1. KPI Ringkasan</h6>
+                <div class="row mb-3" id="bottleneckSummaryCards">
                     <!-- Akan diisi oleh JavaScript -->
                 </div>
-                
-                <!-- Detail Tabel -->
-                <h6 class="section-title">Detail Aplikasi dengan Status Ini</h6>
-                <div class="table-responsive" style="max-height: 400px;">
-                    <table class="table table-sm">
-                        <thead>
+
+                <h6 class="section-title">Status TAT vs Loan Size</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <div class="chart-head">TAT vs Loan Size per Status</div>
+                            <canvas id="bottleneckLoanSizeChart" height="220"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-card">
+                            <div class="chart-head">2. Loop Frequency Distribution</div>
+                            <canvas id="bottleneckLoopFreqChart" height="220"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="section-title">3. Flow Loop Pattern</h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
                             <tr>
-                                <th>App ID</th>
-                                <th>Branch</th>
-                                <th>Purpose</th>
-                                <th>Segment</th>
-                                <th class="text-end">TAT Status</th>
-                                <th class="text-end">TAT E2E</th>
-                                <th class="text-end">Limit</th>
-                                <th>Action</th>
+                                <th>From Status</th>
+                                <th>To Status</th>
+                                <th class="text-end">Count</th>
                             </tr>
                         </thead>
-                        <tbody id="bottleneckDetailTable">
-                            <!-- Akan diisi oleh JavaScript -->
-                        </tbody>
+                        <tbody id="loopPatternTable"></tbody>
                     </table>
                 </div>
-                
-                <!-- Distribution Analysis -->
-                <h6 class="section-title mt-4">Analisis Distribusi</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <div class="chart-head">Distribusi Durasi Status Ini</div>
-                            <canvas id="bottleneckDistributionChart" height="200"></canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="chart-card">
-                            <div class="chart-head">Korelasi dengan Limit</div>
-                            <canvas id="bottleneckLimitChart" height="200"></canvas>
-                        </div>
-                    </div>
+
+                <h6 class="section-title">4. Impact to SLA</h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Loop Count</th>
+                                <th class="text-end">Avg TAT</th>
+                                <th class="text-end">SLA Breach %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slaImpactTable"></tbody>
+                    </table>
+                    <small class="text-muted">SLA Breach dihitung sebagai TAT E2E > boundary outlier global.</small>
+                </div>
+
+                <h6 class="section-title">5. Top Contributor</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Branch</th>
+                                <th class="text-end">Return Rate</th>
+                                <th class="text-end">Avg Loop</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loopContributorTable"></tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer">
@@ -567,6 +619,12 @@
     let globalStats = {}; // Store global stats for single app analysis
     let appsWithPositiveLimit = []; // Store apps with positive limit
     let statusStats = {}; // Store stats for each status
+    let appFlowEvents = {};
+    let statusDurationBuckets = {};
+    let bottleneckMetrics = [];
+    let currentBottleneckStatus = '';
+    let currentBottleneckRows = [];
+    let e2eById = {};
     
     // PERUBAHAN: Update bucket distribusi TAT - <7 hari bukan <8 hari
     const tatBuckets = [
@@ -613,9 +671,42 @@
         { label: '>30M', min: 30e9, max: Infinity }
     ];
 
+    const bottleneckLoanSizeBuckets = [
+        { label: '1-5M', min: 1e9, max: 5e9 },
+        { label: '5-10M', min: 5e9, max: 10e9 },
+        { label: '10-15M', min: 10e9, max: 15e9 },
+        { label: '15-20M', min: 15e9, max: 20e9 },
+        { label: '20-25M', min: 20e9, max: 25e9 },
+        { label: '25-30M', min: 25e9, max: 30e9 },
+        { label: '>30M', min: 30e9, max: Infinity }
+    ];
+
     // Store modal instances
     let detailModalInstance = null;
     let singleAppModalInstance = null;
+
+    if (window.Chart && Chart.defaults) {
+        Chart.defaults.events = ['mousemove', 'mouseout', 'click'];
+    }
+
+    document.addEventListener('dragstart', function (ev) {
+        if (ev.target && ev.target.closest && ev.target.closest('canvas, .chart-card')) {
+            ev.preventDefault();
+        }
+    }, true);
+
+    document.addEventListener('selectstart', function (ev) {
+        if (ev.target && ev.target.closest && ev.target.closest('canvas')) {
+            ev.preventDefault();
+        }
+    }, true);
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('canvas').forEach(function (cv) {
+            cv.setAttribute('draggable', 'false');
+            cv.ondragstart = function () { return false; };
+        });
+    });
 
     // FUNGSI NORMALISASI PURPOSE
     function normalizePurpose(purpose) {
@@ -741,6 +832,8 @@
         if(!m.id || !m.stat) { alert("ID Aplikasi dan Status wajib dipilih!"); return; }
 
         const apps = {}, statusAgg = {};
+        appFlowEvents = {};
+        let flowRowIndex = 0;
 
         raw.forEach(row => {
             const id = row[m.id]; if(!id) return;
@@ -814,20 +907,23 @@
                 };
             }
 
+            const statusName = (row[m.stat] || 'Unknown').toString().trim() || 'Unknown';
             let dur = 0;
+            let startDate = new Date(NaN);
+            let endDate = new Date(NaN);
             if(mode === 'date') {
                 // PERBAIKAN: Parsing tanggal start dan end juga dengan cara yang sama
-                let d1 = parseDateRobust(row[m.s]);
-                let d2 = parseDateRobust(row[m.e]);
+                startDate = parseDateRobust(row[m.s]);
+                endDate = parseDateRobust(row[m.e]);
                 
-                if(!isNaN(d1.getTime())) { 
-                    if(!apps[id].min || d1 < apps[id].min) apps[id].min = d1; 
+                if(!isNaN(startDate.getTime())) { 
+                    if(!apps[id].min || startDate < apps[id].min) apps[id].min = startDate; 
                 }
-                if(!isNaN(d2.getTime())) { 
-                    if(!apps[id].max || d2 > apps[id].max) apps[id].max = d2; 
+                if(!isNaN(endDate.getTime())) { 
+                    if(!apps[id].max || endDate > apps[id].max) apps[id].max = endDate; 
                 }
-                if(!isNaN(d1.getTime()) && !isNaN(d2.getTime())) {
-                    dur = (d2 - d1) / 86400000;
+                if(!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                    dur = (endDate - startDate) / 86400000;
                 }
             } else {
                 dur = parseFloat(row[m.t]) || 0;
@@ -835,8 +931,26 @@
             }
             if(dur < 0) dur = 0;
 
-            const k = id + "##" + (row[m.stat]||'Unknown');
+            if(!appFlowEvents[id]) {
+                appFlowEvents[id] = {
+                    id: id,
+                    branch: apps[id].branch,
+                    mon: apps[id].mon,
+                    displayMon: apps[id].displayMon,
+                    events: []
+                };
+            }
+            appFlowEvents[id].events.push({
+                status: statusName,
+                duration: dur,
+                startMs: !isNaN(startDate.getTime()) ? startDate.getTime() : null,
+                endMs: !isNaN(endDate.getTime()) ? endDate.getTime() : null,
+                seq: flowRowIndex
+            });
+
+            const k = id + "##" + statusName;
             statusAgg[k] = (statusAgg[k] || 0) + dur;
+            flowRowIndex++;
         });
 
         e2eData = Object.values(apps).map(a => {
@@ -854,6 +968,8 @@
 
         // Filter out invalid TAT
         e2eData = e2eData.filter(app => !isNaN(app.tat) && app.tat >= 0);
+        e2eById = {};
+        e2eData.forEach(app => { e2eById[app.id] = app; });
 
         // Sort by TAT for quartile calculations
         e2eData.sort((a, b) => a.tat - b.tat);
@@ -1417,12 +1533,14 @@
             if(!stBuckets[st]) stBuckets[st] = [];
             stBuckets[st].push({ tat: statusAgg[k], app: apps[id] });
         });
+        statusDurationBuckets = stBuckets;
         
         statusOutliers = {};
         statusStats = {}; // Reset status stats
         
         const stMetrics = Object.keys(stBuckets).map(st => {
             const arr = stBuckets[st].map(x=>x.tat);
+            const totalTat = arr.reduce((sum, val) => sum + val, 0);
             const s = calcStats(arr);
             statusStats[st] = s; // Store stats for each status
             statusOutliers[st] = stBuckets[st].filter(x=>x.tat > s.high).map(x=>({...x.app, tat:x.tat}));
@@ -1434,10 +1552,13 @@
             return { 
                 stat:st, 
                 ...s,
+                totalTat: totalTat,
+                cases: arr.length,
                 iqr: iqr,
                 boundary: boundary
             };
         });
+        bottleneckMetrics = stMetrics;
 
         // Status table - DITAMBAHKAN KOLOM IQR DAN BOUNDARY
         document.getElementById('tblStatus').innerHTML = stMetrics.map(x => {
@@ -1461,8 +1582,12 @@
         }).join('');
 
         // Top Bottlenecks Chart - PERBAIKAN: Gunakan perhitungan yang sama dengan status table
-        const slow = stMetrics.sort((a,b)=>b.avg-a.avg).slice(0,10);
-        mkChart('cSlow', 'bar', slow.map(x=>x.stat), slow.map(x=>x.avg), 'Avg TAT', '#ef4444', 'y');
+        const totalStatusTatAll = stMetrics.reduce((sum, item) => sum + item.totalTat, 0);
+        const slow = [...stMetrics].sort((a,b)=>b.avg-a.avg).slice(0,10).map(item => ({
+            ...item,
+            impactPct: totalStatusTatAll > 0 ? (item.totalTat / totalStatusTatAll) * 100 : 0
+        }));
+        createTopBottleneckChart(slow, totalStatusTatAll);
 
         // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps dengan limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
@@ -1994,6 +2119,103 @@
         };
     }
 
+    function createTopBottleneckChart(slowData, totalStatusTatAll) {
+        if(charts.cSlow) charts.cSlow.destroy();
+        document.getElementById('tatImpactTotal').textContent = `TAT Impact (Total: ${totalStatusTatAll.toFixed(1)} hari)`;
+
+        charts.cSlow = new Chart(document.getElementById('cSlow'), {
+            type: 'bar',
+            data: {
+                labels: slowData.map(x => x.stat),
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Avg TAT (hari)',
+                        data: slowData.map(x => x.avg),
+                        backgroundColor: '#ef4444',
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'line',
+                        label: 'TAT Impact (%)',
+                        data: slowData.map(x => x.impactPct),
+                        borderColor: '#22c55e',
+                        backgroundColor: '#22c55e',
+                        yAxisID: 'y1',
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (evt, elements) => {
+                    if(elements.length > 0) {
+                        const status = slowData[elements[0].index].stat;
+                        showBottleneckDetail(status);
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Avg TAT (hari)' }
+                    },
+                    y1: {
+                        position: 'right',
+                        beginAtZero: true,
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'TAT Impact (%)' },
+                        ticks: {
+                            callback: function(value) { return `${value}%`; }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            afterBody: function(ctx) {
+                                const item = slowData[ctx[0].dataIndex];
+                                return [
+                                    `Cases: ${item.cases.toLocaleString()}`,
+                                    `Total durasi status: ${item.totalTat.toFixed(1)} hari`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function getOrderedFlowEvents(flowObj) {
+        if (!flowObj || !flowObj.events || !flowObj.events.length) return [];
+        const events = [...flowObj.events];
+        events.sort((a, b) => {
+            if (a.startMs !== null && b.startMs !== null) return a.startMs - b.startMs;
+            if (a.startMs !== null) return -1;
+            if (b.startMs !== null) return 1;
+            return a.seq - b.seq;
+        });
+        return events;
+    }
+
+    function bucketLabelForBottleneckLoan(limitValue) {
+        for (const bucket of bottleneckLoanSizeBuckets) {
+            if (limitValue >= bucket.min && limitValue < bucket.max) return bucket.label;
+        }
+        return '>30M';
+    }
+
+    function safeNum(value, fallback = 0) {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
+    }
+
     function mkChart(id, type, l, d, lbl, c, ax='x') {
         if(charts[id]) charts[id].destroy();
         charts[id] = new Chart(document.getElementById(id), {
@@ -2332,7 +2554,7 @@
         const totalApps = apps.length;
         const appsWithPositiveLimit = apps.filter(app => app.limit > 0);
         const appsWithZeroOrNegativeLimit = apps.filter(app => app.limit <= 0);
-        const avgTat = apps.reduce((sum, app) => sum + app.tat, 0) / totalApps;
+        const avgTat = apps.reduce((sum, app) => sum + safeNum(app.tat, 0), 0) / totalApps;
         const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
         const avgLimit = appsWithPositiveLimit.length > 0 ? totalLimit / appsWithPositiveLimit.length : 0;
         
@@ -2476,7 +2698,7 @@
                     <td>${app.purpOriginal || app.purp}</td>
                     <td><span class="badge bg-secondary">${app.seg}</span></td>
                     <td class="${limitClass}">${limitBadge}</td>
-                    <td class="text-end fw-bold">${app.tat.toFixed(1)}</td>
+                    <td class="text-end fw-bold">${safeNum(app.tat, 0).toFixed(1)}</td>
                     ${statusCell}
                     ${actionCell}
                 </tr>
@@ -2626,100 +2848,295 @@
         link.click();
         document.body.removeChild(link);
     }
-    // Tambahkan fungsi ini di bagian JavaScript
-
-function showBottleneckDetail(status) {
-    // Filter data untuk status tertentu
-    const statusData = e2eData.filter(app => {
-        // Cari aplikasi yang memiliki status ini dalam flow
-        // Ini perlu disesuaikan dengan struktur data statusAgg Anda
-        return true; // Logika filtering
-    });
-    
-    // Update modal title
-    document.getElementById('bottleneckStatusName').textContent = status;
-    
-    // Hitung statistik
-    const totalApps = statusData.length;
-    const avgTat = statusData.reduce((sum, app) => sum + app.tat, 0) / totalApps;
-    const maxTat = Math.max(...statusData.map(app => app.tat));
-    const minTat = Math.min(...statusData.map(app => app.tat));
-    
-    // Update summary cards
-    document.getElementById('bottleneckSummaryCards').innerHTML = `
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Total Apps</div>
-                <div class="kpi-val">${totalApps}</div>
-                <div class="kpi-sub">dengan status ini</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Rata-rata</div>
-                <div class="kpi-val">${avgTat.toFixed(1)}</div>
-                <div class="kpi-sub">hari</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Maksimum</div>
-                <div class="kpi-val">${maxTat.toFixed(1)}</div>
-                <div class="kpi-sub">hari</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="kpi-card">
-                <div class="kpi-title">Minimum</div>
-                <div class="kpi-val">${minTat.toFixed(1)}</div>
-                <div class="kpi-sub">hari</div>
-            </div>
-        </div>
-    `;
-    
-    // Populate table
-    const tableBody = document.getElementById('bottleneckDetailTable');
-    tableBody.innerHTML = statusData.slice(0, 50).map(app => `
-        <tr>
-            <td>${app.id}</td>
-            <td>${app.branch}</td>
-            <td>${app.purp}</td>
-            <td>${app.seg}</td>
-            <td class="text-end fw-bold">${app.tat.toFixed(1)}</td>
-            <td class="text-end">${app.e2eTat || app.tat}</td>
-            <td class="text-end">${formatIDR(app.limit)}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="showSingleAppDetail(${JSON.stringify(app).replace(/"/g, '&quot;')})">
-                    <i class="bi bi-eye"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
-    
-    // Tampilkan modal
-    new bootstrap.Modal(document.getElementById('bottleneckDetailModal')).show();
-}
-
-// Modifikasi chart Top Bottlenecks untuk menambahkan click event
-function modifyBottleneckChart() {
-    const ctx = document.getElementById('cSlow').getContext('2d');
-    
-    // Simpan data yang digunakan di chart
-    window.bottleneckChartData = slow; // 'slow' adalah data untuk top bottlenecks
-    
-    // Tambahkan event listener untuk chart
-    document.getElementById('cSlow').onclick = function(evt) {
-        const points = charts.cSlow.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-        
-        if (points.length) {
-            const firstPoint = points[0];
-            const label = charts.cSlow.data.labels[firstPoint.index];
-            const value = charts.cSlow.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
-            
-            showBottleneckDetail(label);
+    function showBottleneckDetail(status) {
+        const statusRows = statusDurationBuckets[status] || [];
+        if (!statusRows.length) {
+            alert(`Tidak ada data untuk status "${status}"`);
+            return;
         }
-    };
-}
+
+        currentBottleneckStatus = status;
+        currentBottleneckRows = statusRows.map(x => ({
+            id: x.app.id,
+            branch: x.app.branch,
+            segment: x.app.seg,
+            purpose: x.app.purpOriginal || x.app.purp,
+            limit: x.app.limit,
+            statusTat: x.tat,
+            e2eTat: safeNum((e2eById[x.app.id] || x.app).tat, 0)
+        }));
+
+        const appMap = {};
+        statusRows.forEach(item => {
+            const appRef = e2eById[item.app.id] || item.app;
+            appMap[item.app.id] = {
+                app: appRef,
+                statusTat: safeNum(item.tat, 0)
+            };
+        });
+        const appIds = Object.keys(appMap);
+
+        const periodCount = {};
+        appIds.forEach(id => {
+            const period = appMap[id].app.displayMon || formatMonthDisplay(appMap[id].app.mon) || 'Unknown';
+            periodCount[period] = (periodCount[period] || 0) + 1;
+        });
+        const period = Object.entries(periodCount).sort((a,b) => b[1] - a[1])[0]?.[0] || 'All Period';
+
+        const loopDist = { '1x': 0, '2x': 0, '3x': 0, '>3x': 0 };
+        const transitionMap = {};
+        const branchMap = {};
+        const loanBucketStats = {};
+        bottleneckLoanSizeBuckets.forEach(b => { loanBucketStats[b.label] = { sumTat: 0, cnt: 0 }; });
+
+        const loopInfoByApp = {};
+        let returnCases = 0;
+        let maxLoop = 0;
+        let totalLoopForReturnCases = 0;
+        let totalExtraTat = 0;
+
+        appIds.forEach(id => {
+            const flowObj = appFlowEvents[id];
+            const events = getOrderedFlowEvents(flowObj);
+            const hits = events.filter(e => e.status === status);
+            const occurrences = hits.length;
+            const returnCount = Math.max(0, occurrences - 1);
+            const isReturn = returnCount > 0;
+            const extraTat = hits.slice(1).reduce((sum, e) => sum + safeNum(e.duration, 0), 0);
+            const branchName = appMap[id].app.branch || 'Unknown';
+
+            if (!branchMap[branchName]) {
+                branchMap[branchName] = { total: 0, returnCase: 0, sumLoop: 0, returnLoopCases: 0 };
+            }
+            branchMap[branchName].total++;
+            if (isReturn) {
+                returnCases++;
+                totalLoopForReturnCases += occurrences;
+                totalExtraTat += extraTat;
+                maxLoop = Math.max(maxLoop, occurrences);
+                branchMap[branchName].returnCase++;
+                branchMap[branchName].sumLoop += occurrences;
+                branchMap[branchName].returnLoopCases++;
+                if (returnCount === 1) loopDist['1x']++;
+                else if (returnCount === 2) loopDist['2x']++;
+                else if (returnCount === 3) loopDist['3x']++;
+                else loopDist['>3x']++;
+            } else {
+                maxLoop = Math.max(maxLoop, occurrences);
+            }
+
+            loopInfoByApp[id] = { occurrences, returnCount, isReturn, extraTat };
+
+            const limit = safeNum(appMap[id].app.limit, 0);
+            if (limit >= 1e9) {
+                const bucketLabel = bucketLabelForBottleneckLoan(limit);
+                loanBucketStats[bucketLabel].sumTat += safeNum(appMap[id].statusTat, 0);
+                loanBucketStats[bucketLabel].cnt++;
+            }
+
+            if (isReturn) {
+                for (let i = 0; i < events.length - 1; i++) {
+                    const from = events[i].status || 'Unknown';
+                    const to = events[i + 1].status || 'Unknown';
+                    if (from === status || to === status) {
+                        const key = `${from}|||${to}`;
+                        transitionMap[key] = (transitionMap[key] || 0) + 1;
+                    }
+                }
+            }
+        });
+
+        const totalCase = appIds.length;
+        const reworkRate = totalCase > 0 ? (returnCases / totalCase) * 100 : 0;
+        const avgLoopPerCase = returnCases > 0 ? totalLoopForReturnCases / returnCases : 1;
+        const avgExtraTat = returnCases > 0 ? totalExtraTat / returnCases : 0;
+
+        document.getElementById('bottleneckStatusName').textContent = status;
+        document.getElementById('bottleneckStatusHeader').textContent = status;
+        document.getElementById('bottleneckPeriodText').textContent = period;
+
+        document.getElementById('bottleneckSummaryCards').innerHTML = `
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Total Case</div><div class="kpi-val">${totalCase.toLocaleString()}</div><div class="kpi-sub">di status ini</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Case Return</div><div class="kpi-val">${returnCases.toLocaleString()}</div><div class="kpi-sub">mengalami return</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Rework Rate</div><div class="kpi-val">${reworkRate.toFixed(1)}%</div><div class="kpi-sub">return / total</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Avg Loop</div><div class="kpi-val">${avgLoopPerCase.toFixed(1)}</div><div class="kpi-sub">per case return</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Max Loop</div><div class="kpi-val">${maxLoop}</div><div class="kpi-sub">kunjungan status</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Avg Tambahan TAT</div><div class="kpi-val">+${avgExtraTat.toFixed(1)}</div><div class="kpi-sub">hari karena return</div></div></div>
+        `;
+
+        const loopPatternRows = Object.entries(transitionMap)
+            .map(([key, count]) => {
+                const [from, to] = key.split('|||');
+                return { from, to, count };
+            })
+            .sort((a,b) => b.count - a.count)
+            .slice(0, 10);
+        document.getElementById('loopPatternTable').innerHTML = loopPatternRows.length ? loopPatternRows.map(r => `
+            <tr><td>${r.from}</td><td>${r.to}</td><td class="text-end">${r.count.toLocaleString()}</td></tr>
+        `).join('') : `<tr><td colspan="3" class="text-center text-muted">Belum ada pola loop/return</td></tr>`;
+
+        const groups = [
+            { label: 'No loop', match: x => x.returnCount === 0 },
+            { label: '1-2 loop', match: x => x.returnCount >= 1 && x.returnCount <= 2 },
+            { label: '>2 loop', match: x => x.returnCount > 2 }
+        ];
+        document.getElementById('slaImpactTable').innerHTML = groups.map(g => {
+            const members = appIds.filter(id => g.match(loopInfoByApp[id]));
+            if (!members.length) {
+                return `<tr><td>${g.label}</td><td class="text-end">-</td><td class="text-end">-</td></tr>`;
+            }
+            const avgTat = members.reduce((sum, id) => sum + safeNum(appMap[id].app.tat, 0), 0) / members.length;
+            const breach = members.filter(id => safeNum(appMap[id].app.tat, 0) > safeNum(globalStats.high, 0)).length;
+            const breachPct = (breach / members.length) * 100;
+            return `<tr><td>${g.label}</td><td class="text-end">${avgTat.toFixed(1)} hari</td><td class="text-end">${breachPct.toFixed(1)}%</td></tr>`;
+        }).join('');
+
+        const contributors = Object.entries(branchMap).map(([branch, d]) => {
+            const returnRate = d.total > 0 ? (d.returnCase / d.total) * 100 : 0;
+            const avgLoop = d.returnLoopCases > 0 ? d.sumLoop / d.returnLoopCases : 0;
+            return { branch, returnRate, avgLoop, total: d.total };
+        }).sort((a,b) => b.returnRate - a.returnRate).slice(0, 10);
+        document.getElementById('loopContributorTable').innerHTML = contributors.length ? contributors.map(x => `
+            <tr><td>${x.branch}</td><td class="text-end">${x.returnRate.toFixed(1)}%</td><td class="text-end">${x.avgLoop.toFixed(1)}</td></tr>
+        `).join('') : `<tr><td colspan="3" class="text-center text-muted">Tidak ada data contributor</td></tr>`;
+
+        const loanLabels = bottleneckLoanSizeBuckets.map(b => b.label);
+        const avgStatusTatByLoan = loanLabels.map(label => {
+            const d = loanBucketStats[label];
+            return d.cnt > 0 ? d.sumTat / d.cnt : 0;
+        });
+        const caseCountByLoan = loanLabels.map(label => loanBucketStats[label].cnt);
+
+        if (charts.bottleneckLoanSize) charts.bottleneckLoanSize.destroy();
+        charts.bottleneckLoanSize = new Chart(document.getElementById('bottleneckLoanSizeChart'), {
+            type: 'bar',
+            data: {
+                labels: loanLabels,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: 'Avg TAT Status (hari)',
+                        data: avgStatusTatByLoan,
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        type: 'line',
+                        label: '#Case',
+                        data: caseCountByLoan,
+                        borderColor: '#2563eb',
+                        backgroundColor: '#2563eb',
+                        yAxisID: 'y1',
+                        tension: 0.3,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                events: ['click'],
+                interaction: { mode: 'nearest', intersect: true },
+                plugins: { tooltip: { enabled: false } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Avg TAT (hari)' } },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: '#Case' }
+                    }
+                }
+            }
+        });
+
+        if (charts.bottleneckLoopFreq) charts.bottleneckLoopFreq.destroy();
+        charts.bottleneckLoopFreq = new Chart(document.getElementById('bottleneckLoopFreqChart'), {
+            type: 'bar',
+            data: {
+                labels: ['1x', '2x', '3x', '>3x'],
+                datasets: [{
+                    label: '#Case',
+                    data: [loopDist['1x'], loopDist['2x'], loopDist['3x'], loopDist['>3x']],
+                    backgroundColor: ['#0ea5e9', '#2563eb', '#4f46e5', '#7c3aed']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                events: ['click'],
+                interaction: { mode: 'nearest', intersect: true },
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        const loanCanvas = document.getElementById('bottleneckLoanSizeChart');
+        const loopCanvas = document.getElementById('bottleneckLoopFreqChart');
+        loanCanvas.onmousedown = (ev) => ev.preventDefault();
+        loopCanvas.onmousedown = (ev) => ev.preventDefault();
+        loanCanvas.ondragstart = () => false;
+        loopCanvas.ondragstart = () => false;
+
+        new bootstrap.Modal(document.getElementById('bottleneckDetailModal')).show();
+    }
+
+    function showAllBottlenecks() {
+        if (!bottleneckMetrics.length) {
+            alert('Data bottleneck belum tersedia. Silakan proses data terlebih dahulu.');
+            return;
+        }
+        const summaryRows = [...bottleneckMetrics]
+            .sort((a,b) => b.avg - a.avg)
+            .slice(0, 30)
+            .map((x, i) => ({
+                id: `${i + 1}. ${x.stat}`,
+                branch: '-',
+                purp: 'Bottleneck Summary',
+                seg: `Cases: ${x.cases.toLocaleString()}`,
+                limit: x.totalTat,
+                tat: x.avg,
+                mon: '-',
+                displayMon: '-'
+            }));
+        showDetailModal(
+            'bottleneck',
+            summaryRows,
+            'Top Bottleneck Summary',
+            '#f59e0b',
+            `Klik bar di chart Top Bottlenecks untuk membuka analisis loop detail per status.`
+        );
+    }
+
+    function exportBottleneckData() {
+        if (!currentBottleneckRows.length) {
+            alert('Belum ada data bottleneck yang dipilih.');
+            return;
+        }
+
+        const headers = ['No', 'App ID', 'Branch', 'Purpose', 'Segment', 'Limit', 'TAT Status (Hari)', 'TAT E2E (Hari)'];
+        const csvRows = [headers];
+        currentBottleneckRows.forEach((row, idx) => {
+            csvRows.push([
+                idx + 1,
+                row.id,
+                row.branch,
+                row.purpose,
+                row.segment,
+                row.limit,
+                safeNum(row.statusTat, 0).toFixed(2),
+                safeNum(row.e2eTat, 0).toFixed(2)
+            ]);
+        });
+
+        const csvContent = csvRows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `bottleneck_${currentBottleneckStatus}_${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 </script>
 </body>
 </html>
