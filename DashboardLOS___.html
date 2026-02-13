@@ -788,10 +788,11 @@
                                         <th>Status</th>
                                         <th class="text-end">Total Step</th>
                                         <th class="text-end">TAT (TOTAL)</th>
+                                        <th class="text-center">Priority</th>
                                     </tr>
                                 </thead>
                                 <tbody id="singleAppRepeatTable">
-                                    <tr><td colspan="3" class="text-center text-muted">-</td></tr>
+                                    <tr><td colspan="4" class="text-center text-muted">-</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -2869,6 +2870,13 @@ ${userText}`
             .sort((a, b) => b.step - a.step || b.tatTotal - a.tatTotal);
     }
 
+    function getStepPriority(totalTat) {
+        const s = safeNum(totalTat, 0);
+        if (s > 5) return { label: 'High', className: 'bg-danger' };
+        if (s > 3) return { label: 'Medium', className: 'bg-warning text-dark' };
+        return { label: 'Low', className: 'bg-success' };
+    }
+
     function formatDateDisplay(dateMs) {
         if (!dateMs) return '-';
         try {
@@ -3106,14 +3114,18 @@ ${userText}`
         const totalReturn = repeatRows.reduce((sum, x) => sum + x.repeat, 0);
         document.getElementById('singleAppRepeatTotal').textContent = `Total Return: ${totalReturn}x`;
         document.getElementById('singleAppRepeatTable').innerHTML = repeatRows.length
-            ? repeatRows.map(x => `
+            ? repeatRows.map(x => {
+                const pr = getStepPriority(x.tatTotal);
+                return `
                 <tr>
                     <td><span class="repeat-status-chip">${x.status}</span></td>
                     <td class="text-end fw-bold text-warning-emphasis">${x.step}</td>
                     <td class="text-end fw-bold">${x.tatTotal.toFixed(1)} hari</td>
+                    <td class="text-center"><span class="badge ${pr.className}">${pr.label}</span></td>
                 </tr>
-            `).join('')
-            : `<tr><td colspan="3" class="text-center text-muted">Tidak ada pengulangan status</td></tr>`;
+                `;
+            }).join('')
+            : `<tr><td colspan="4" class="text-center text-muted">Tidak ada pengulangan status</td></tr>`;
 
         const flowObj = appFlowEvents[app.id];
         const flowEvents = aggregateFlowEventsByStatusAndCompleteDate(getOrderedFlowEvents(flowObj));
