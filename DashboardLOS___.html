@@ -430,6 +430,151 @@
             border-color: #bbf7d0;
             background: #f0fdf4;
         }
+        .sim-kpi {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+        }
+        .sim-kpi .label {
+            font-size: 0.68rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .sim-kpi .value {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .sim-kpi .sub {
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+        #actionSimCard {
+            border-color: #cbd5e1 !important;
+            background: #ffffff;
+        }
+        #actionSimCard .chart-head {
+            color: #334155 !important;
+        }
+        #actionSimCard .chart-head .small.text-muted {
+            color: #64748b !important;
+            font-weight: 500;
+        }
+        #actionSimCard .sim-kpi {
+            border-color: #e2e8f0;
+            background: #f8fafc;
+        }
+        #actionSimCard .sim-kpi .label {
+            color: #64748b;
+        }
+        #actionSimCard .text-primary,
+        #actionSimCard .value.text-primary {
+            color: #b91c1c !important;
+        }
+        .sim-controls-shell {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 10px;
+        }
+        .sim-controls-head {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        .sim-status-board {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .sim-row {
+            display: grid;
+            grid-template-columns: minmax(180px, 1.3fr) minmax(240px, 2fr) 62px;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .sim-row:last-child {
+            border-bottom: 0;
+        }
+        .sim-row:hover {
+            background: #f8fafc;
+        }
+        .sim-status-main {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        .sim-status-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sim-impact-chip {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #7f1d1d;
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 999px;
+            padding: 1px 6px;
+            flex: 0 0 auto;
+        }
+        .sim-slider-wrap {
+            padding-top: 2px;
+        }
+        .sim-slider.form-range {
+            margin: 0;
+        }
+        .sim-slider.form-range::-webkit-slider-runnable-track {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 999px;
+        }
+        .sim-slider.form-range::-webkit-slider-thumb {
+            background: #b91c1c;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.25);
+            margin-top: -4px;
+        }
+        .sim-slider.form-range::-moz-range-track {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 999px;
+        }
+        .sim-slider.form-range::-moz-range-thumb {
+            background: #b91c1c;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.25);
+        }
+        .sim-pct-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #334155;
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            border-radius: 999px;
+            text-align: center;
+            padding: 4px 0;
+        }
+        @media (max-width: 768px) {
+            .sim-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .sim-pct-badge {
+                width: 64px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -533,7 +678,7 @@
                         <i class="bi bi-info-circle-fill me-2 fs-5"></i>
                         <div>
                             <small class="fw-bold d-block">Outlier Definition:</small>
-                            <small>Data with TAT > <span class="fw-bold" id="outlierFormula">Q3 + 1.5Ã—IQR</span>. Normal range: Q1=<span id="infoQ1">-</span> to Q3=<span id="infoQ3">-</span> days.</small>
+                            <small>Data with TAT > <span class="fw-bold" id="outlierFormula">Q3 + 1.5xIQR</span>. Normal range: Q1=<span id="infoQ1">-</span> to Q3=<span id="infoQ3">-</span> days.</small>
                             <small class="d-block mt-1">
                                 <i class="bi bi-currency-dollar me-1"></i>
                                 <span class="limit-info">Limit Calculation:</span> Only applications with limit > 0 are included in total & average limit.
@@ -565,7 +710,7 @@
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('median', medianApps)" style="border-left-color:#8b5cf6; background:#f3f0ff"><div class="kpi-title">Median TAT</div><div class="kpi-val" id="vMed">-</div><div class="kpi-sub">Days <i class="bi bi-eye ms-1 small"></i></div></div></div>
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q3', q3Apps)" style="border-left-color:#f59e0b; background:#fffbeb"><div class="kpi-title">Quartile 3 (75%)</div><div class="kpi-val" id="vQ3">-</div><div class="kpi-sub">Days <i class="bi bi-eye ms-1 small"></i></div></div></div>
             <div class="col-md-2"><div class="kpi-card" style="border-left-color:#7c3aed; background:#f5f3ff"><div class="kpi-title">IQR (Q3-Q1)</div><div class="kpi-val" id="vIQR">-</div><div class="kpi-sub">Interquartile Range</div></div></div>
-            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Outlier Boundary</div><div class="kpi-val" id="vOutBoundary">-</div><div class="kpi-sub">Q3 + 1.5Ã—IQR</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Outlier Boundary</div><div class="kpi-val" id="vOutBoundary">-</div><div class="kpi-sub">Q3 + 1.5xIQR</div></div></div>
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showOutliersModal('global')" style="border-left-color:#ef4444; background:#fef2f2"><div class="kpi-title text-danger">Total Outliers</div><div class="kpi-val text-danger" id="vOut">-</div><div class="kpi-sub">Click for details</div></div></div>
         </div>
 
@@ -601,7 +746,7 @@
             <div class="col-md-12">
                 <div class="chart-card">
                     <div class="chart-head"><span><i class="bi bi-list-ul me-2"></i>Outlier Detail by Status</span>
-                        <span class="small text-muted">IQR = Q3 - Q1 | Boundary = Q3 + 1.5Ã—IQR</span>
+                        <span class="small text-muted">IQR = Q3 - Q1 | Boundary = Q3 + 1.5xIQR</span>
                     </div>
                     <div style="overflow-y:auto; height: 350px;">
                         <table class="table-custom status-table-small">
@@ -716,6 +861,56 @@
                     <div class="chart-head">Top 10 Branch <span class="small text-primary">Click for details</span></div>
                     <div style="height: 250px;"><canvas id="cBranch"></canvas></div>
                     <div id="branchChartInfo" class="small text-muted mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="section-title">7. ACTION IMPACT SIMULATOR</h6>
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <div class="chart-card border-secondary" id="actionSimCard">
+                    <div class="chart-head text-dark d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-sliders me-2"></i>Simulator Dampak Aksi (What-if)</span>
+                        <span class="small text-muted">Simulasi gabungan pengurangan loop semua status</span>
+                    </div>
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-12">
+                            <label class="small text-muted fw-semibold">Pengurangan Loop per Status</label>
+                            <div class="sim-controls-shell">
+                                <div class="sim-controls-head">Atur pengurangan loop per status. Nilai 0% artinya tidak ada intervensi untuk status tersebut.</div>
+                                <div id="simStatusControls" class="sim-status-board">
+                                    <div class="small text-muted p-2">Status belum tersedia.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3"><div class="sim-kpi"><div class="label">Current Avg TAT (Portfolio)</div><div class="value" id="simBaseAvgTat">-</div><div class="sub">current conditions</div></div></div>
+                        <div class="col-md-3"><div class="sim-kpi"><div class="label">Projected Avg TAT (Portfolio)</div><div class="value text-primary" id="simProjAvgTat">-</div><div class="sub">after action</div></div></div>
+                        <div class="col-md-3"><div class="sim-kpi"><div class="label">Penghematan TAT</div><div class="value text-success" id="simTatSaved">-</div><div class="sub">total hari status</div></div></div>
+                        <div class="col-md-3"><div class="sim-kpi"><div class="label">Dampak ke Avg Portfolio</div><div class="value text-success" id="simPortfolioDelta">-</div><div class="sub">penurunan hari/app</div></div></div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div class="sim-kpi h-100">
+                                <div class="label mb-1">SLA Breach (Selected Status)</div>
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <div>
+                                        <div class="small text-muted">Baseline</div>
+                                        <div class="value" id="simBreachBase">-</div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="small text-muted">Proyeksi</div>
+                                        <div class="value text-primary" id="simBreachProj">-</div>
+                                    </div>
+                                </div>
+                                <div class="small text-muted mt-2" id="simInsight">Pilih satu atau lebih status untuk melihat simulasi.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div style="height:170px;"><canvas id="cActionSim"></canvas></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1013,7 +1208,7 @@
                         <span class="badge bg-danger ms-1">High</span> if n >= 30 and breach >= 5%,
                         <span class="badge bg-warning text-dark ms-1">Medium</span> if n >= 30 and breach >= 2%,
                         <span class="badge bg-success ms-1">Low</span> otherwise.
-                        Breach% = breachCount / total applications bucket Ã— 100.
+                        Breach% = breachCount / total applications bucket x 100.
                     </div>
                 </div>
             </div>
@@ -1056,6 +1251,9 @@
     let currentBottleneckStatus = '';
     let currentBottleneckRows = [];
     let e2eById = {};
+    let simReductionByStatus = {};
+    let simStatusOrder = [];
+    let simImpactByStatus = {};
     const GEMINI_API_KEY = ''; // Isi sendiri secret key Gemini Anda
     const GEMINI_MODEL = 'gemini-2.0-flash';
     
@@ -1066,7 +1264,7 @@
         { label: '<30 days', min: 14, max: 29.999 },
         { label: '<60 days', min: 30, max: 59.999 },
         { label: '<90 days', min: 60, max: 89.999 },
-        { label: 'â‰¥90 days', min: 90, max: Infinity }
+        { label: '>=90 days', min: 90, max: Infinity }
     ];
 
     // NEW: Loan size buckets (dalam juta)
@@ -1564,7 +1762,7 @@ ${userText}`
         
         // Update info panel tentang perhitungan limit
         document.getElementById('limitCalcInfo').innerHTML = 
-            `From ${totalApps} applications, ${appsWithPositiveLimit.length} have limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit â‰¤ 0 excluded from calculation).`;
+            `From ${totalApps} applications, ${appsWithPositiveLimit.length} have limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit 0 excluded from calculation).`;
         
         // Update Stats KPIs
         document.getElementById('vAvg').innerText = globalStats.avg.toFixed(1);
@@ -1583,7 +1781,7 @@ ${userText}`
         document.getElementById('infoQ1').innerText = globalStats.q1.toFixed(1);
         document.getElementById('infoQ3').innerText = globalStats.q3.toFixed(1);
         document.getElementById('outlierFormula').innerHTML = 
-            `${globalStats.q3.toFixed(1)} + 1.5Ã—${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} days`;
+            `${globalStats.q3.toFixed(1)} + 1.5x${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} days`;
 
         // Create Charts
         createCharts(e2eData, globalStats, statusAgg, apps);
@@ -1666,7 +1864,7 @@ ${userText}`
                 trendData[d.mon].cntPositiveLimit++;
                 trendData[d.mon].limPositive += d.limit;
             }
-            // Catat semua limit (termasuk â‰¤ 0) untuk reference
+            // Catat semua limit (termasuk <= 0) untuk reference
             trendData[d.mon].lim += d.limit;
         });
 
@@ -1688,7 +1886,7 @@ ${userText}`
                 branchData[d.branch].cntPositiveLimit++;
                 branchData[d.branch].limPositive += d.limit;
             }
-            // Catat semua limit (termasuk â‰¤ 0) untuk reference
+            // Catat semua limit (termasuk <= 0) untuk reference
             branchData[d.branch].lim += d.limit;
         });
 
@@ -2047,7 +2245,7 @@ ${userText}`
                             afterTitle: function(context) {
                                 const bucket = tatBuckets.find(b => b.label === context[0].label);
                                 if (bucket) {
-                                    return `Range: ${bucket.min === 0 ? '0' : bucket.min} - ${bucket.max === Infinity ? 'âˆž' : bucket.max} days`;
+                                    return `Range: ${bucket.min === 0 ? '0' : bucket.min} - ${bucket.max === Infinity ? 'inf' : bucket.max} days`;
                                 }
                                 return '';
                             }
@@ -2129,6 +2327,7 @@ ${userText}`
         createTopBottleneckChart(slow, totalStatusTatAll);
         renderAvgStepPerStatusChart();
         renderManagementActionBoard(stMetrics);
+        initActionSimulator(stMetrics);
 
         // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps with limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
@@ -2319,15 +2518,15 @@ ${userText}`
                                         break;
                                     case 1: 
                                         category = "Q1 - Median";
-                                        categoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} â‰¤ TAT < ${globalStats.med.toFixed(1)} days)`;
+                                        categoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} <= TAT < ${globalStats.med.toFixed(1)} days)`;
                                         break;
                                     case 2: 
                                         category = "Median - Q3";
-                                        categoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} â‰¤ TAT < ${globalStats.q3.toFixed(1)} days)`;
+                                        categoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} <= TAT < ${globalStats.q3.toFixed(1)} days)`;
                                         break;
                                     case 3: 
                                         category = "Q3 - Boundary";
-                                        categoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} â‰¤ TAT â‰¤ ${boundary.toFixed(1)} days)`;
+                                        categoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} <= TAT <= ${boundary.toFixed(1)} days)`;
                                         break;
                                     case 4: 
                                         category = "Outlier";
@@ -2349,7 +2548,7 @@ ${userText}`
                                     `Category: ${category}`,
                                     categoryDesc,
                                     limitStatus,
-                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5Ã—${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5x${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
                                 ];
                             }
                         }
@@ -2565,15 +2764,15 @@ ${userText}`
                                         break;
                                     case 1: 
                                         tatCategory = "Q1 - Median";
-                                        tatCategoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} â‰¤ TAT < ${globalStats.med.toFixed(1)} days)`;
+                                        tatCategoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} <= TAT < ${globalStats.med.toFixed(1)} days)`;
                                         break;
                                     case 2: 
                                         tatCategory = "Median - Q3";
-                                        tatCategoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} â‰¤ TAT < ${globalStats.q3.toFixed(1)} days)`;
+                                        tatCategoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} <= TAT < ${globalStats.q3.toFixed(1)} days)`;
                                         break;
                                     case 3: 
                                         tatCategory = "Q3 - Boundary";
-                                        tatCategoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} â‰¤ TAT â‰¤ ${boundary.toFixed(1)} days)`;
+                                        tatCategoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} <= TAT <= ${boundary.toFixed(1)} days)`;
                                         break;
                                     case 4: 
                                         tatCategory = "Outlier";
@@ -2589,7 +2788,7 @@ ${userText}`
                                     `TAT: ${app.tat.toFixed(1)} days`,
                                     `TAT Category: ${tatCategory}`,
                                     tatCategoryDesc,
-                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5Ã—${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5x${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
                                 ];
                             }
                         }
@@ -3108,6 +3307,180 @@ ${userText}`
         recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">No status with impact > 5%.</div>`;
     }
 
+    function initActionSimulator(stMetrics) {
+        const container = document.getElementById('simStatusControls');
+        if (!container || !stMetrics || !stMetrics.length) return;
+        const totalTat = stMetrics.reduce((sum, x) => sum + safeNum(x.totalTat, 0), 0);
+        const sorted = [...stMetrics]
+            .map(x => ({ ...x, impactPct: totalTat > 0 ? (safeNum(x.totalTat, 0) / totalTat) * 100 : 0 }))
+            .sort((a, b) => b.impactPct - a.impactPct);
+        simImpactByStatus = {};
+        sorted.forEach(x => { simImpactByStatus[x.stat] = x.impactPct; });
+        simStatusOrder = sorted.map(x => x.stat);
+        simReductionByStatus = {};
+        simStatusOrder.forEach(status => {
+            simReductionByStatus[status] = 0;
+        });
+        container.dataset.key = '';
+        ensureSimStatusControls(simStatusOrder);
+        recalcActionSimulator();
+    }
+
+    function getStatusSimulationBase(status) {
+        const boundary = safeNum((statusStats[status] || {}).high, globalStats.high);
+        let appCount = 0;
+        let appsWithRepeat = 0;
+        let baselineTat = 0;
+        let repeatTat = 0;
+        let breachBase = 0;
+        const perApp = [];
+
+        Object.values(appFlowEvents).forEach(flow => {
+            const hits = getOrderedFlowEvents(flow).filter(ev => String(ev.status || '').trim() === status);
+            if (!hits.length) return;
+            const durations = hits.map(ev => safeNum(ev.duration, 0));
+            const firstTat = safeNum(durations[0], 0);
+            const extraTat = durations.slice(1).reduce((s, n) => s + safeNum(n, 0), 0);
+            const totalTat = firstTat + extraTat;
+            appCount++;
+            if (hits.length > 1) appsWithRepeat++;
+            baselineTat += totalTat;
+            repeatTat += extraTat;
+            if (totalTat > boundary) breachBase++;
+            perApp.push({ firstTat, extraTat, totalTat });
+        });
+
+        return { status, boundary, appCount, appsWithRepeat, baselineTat, repeatTat, breachBase, perApp };
+    }
+
+    function renderActionSimChart(baseAvg, projAvg, breachBase, breachProj) {
+        const cv = document.getElementById('cActionSim');
+        if (!cv) return;
+        if (charts.cActionSim) charts.cActionSim.destroy();
+        charts.cActionSim = new Chart(cv, {
+            type: 'bar',
+            data: {
+                labels: ['Avg TAT Portfolio', 'SLA Breach Case'],
+                datasets: [
+                    {
+                        label: 'Baseline',
+                        data: [Number(baseAvg.toFixed(2)), breachBase],
+                        backgroundColor: '#94a3b8'
+                    },
+                    {
+                        label: 'Proyeksi',
+                        data: [Number(projAvg.toFixed(2)), breachProj],
+                        backgroundColor: '#b45353'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
+            }
+        });
+    }
+
+    function ensureSimStatusControls(statusList) {
+        const container = document.getElementById('simStatusControls');
+        if (!container) return;
+        const key = statusList.join('||');
+        if (container.dataset.key === key) return;
+        container.dataset.key = key;
+        if (!statusList.length) {
+            container.innerHTML = `<div class="small text-muted p-2">Status belum tersedia.</div>`;
+            return;
+        }
+        container.innerHTML = statusList.map(status => {
+            const val = safeNum(simReductionByStatus[status], 0);
+            const impactPct = safeNum(simImpactByStatus[status], 0);
+            return `
+                <div class="sim-row">
+                    <div class="sim-status-main">
+                        <span class="sim-status-name" title="${status}">${status}</span>
+                        <span class="sim-impact-chip">${impactPct.toFixed(1)}%</span>
+                    </div>
+                    <div class="sim-slider-wrap">
+                        <input type="range" class="form-range form-range-sm sim-slider" min="0" max="60" step="5" value="${val}" data-status="${status}" oninput="onSimStatusReductionInput(this)">
+                    </div>
+                    <div class="sim-pct-badge sim-pct">${val}%</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function onSimStatusReductionInput(el) {
+        const status = el.getAttribute('data-status') || '';
+        const val = safeNum(el.value, 0);
+        if (status) simReductionByStatus[status] = val;
+        const row = el.closest('.sim-row');
+        const pct = row ? row.querySelector('.sim-pct') : null;
+        if (pct) pct.textContent = `${val}%`;
+        recalcActionSimulator();
+    }
+
+    function recalcActionSimulator() {
+        const simulatedStatuses = (simStatusOrder || []).filter(Boolean);
+        if (!simulatedStatuses.length) {
+            document.getElementById('simInsight').textContent = 'Belum ada status untuk disimulasikan.';
+            return;
+        }
+
+        let totalBaselineTat = 0;
+        let totalProjectedTat = 0;
+        let totalCase = 0;
+        let breachBase = 0;
+        let breachProj = 0;
+
+        simulatedStatuses.forEach(status => {
+            const base = getStatusSimulationBase(status);
+            const reductionPct = safeNum(simReductionByStatus[status], 0);
+            const r = reductionPct / 100;
+            const projectedTat = base.baselineTat - (base.repeatTat * r);
+            totalBaselineTat += base.baselineTat;
+            totalProjectedTat += projectedTat;
+            totalCase += base.appCount;
+            breachBase += base.breachBase;
+            base.perApp.forEach(x => {
+                const projTat = x.firstTat + (x.extraTat * (1 - r));
+                if (projTat > base.boundary) breachProj++;
+            });
+        });
+
+        const tatSaved = totalBaselineTat - totalProjectedTat;
+        const portfolioDelta = (e2eData.length > 0) ? tatSaved / e2eData.length : 0;
+        const currentPortfolioAvg = safeNum(globalStats.avg, 0);
+        const projectedPortfolioAvg = Math.max(0, currentPortfolioAvg - portfolioDelta);
+
+        const id = (x) => document.getElementById(x);
+        if (id('simBaseAvgTat')) id('simBaseAvgTat').textContent = `${currentPortfolioAvg.toFixed(1)} days`;
+        if (id('simProjAvgTat')) id('simProjAvgTat').textContent = `${projectedPortfolioAvg.toFixed(1)} days`;
+        if (id('simTatSaved')) id('simTatSaved').textContent = `${tatSaved.toFixed(1)} days`;
+        if (id('simPortfolioDelta')) id('simPortfolioDelta').textContent = `-${portfolioDelta.toFixed(2)} days`;
+        if (id('simBreachBase')) id('simBreachBase').textContent = breachBase.toLocaleString();
+        if (id('simBreachProj')) id('simBreachProj').textContent = breachProj.toLocaleString();
+        if (id('simInsight')) {
+            const breachDrop = breachBase - breachProj;
+            const reduced = simulatedStatuses
+                .filter(s => safeNum(simReductionByStatus[s], 0) > 0)
+                .map(s => `${s}:${safeNum(simReductionByStatus[s], 0)}%`);
+            const topPreview = reduced.slice(0, 3).join(', ');
+            const suffix = reduced.length > 3 ? ` +${reduced.length - 3} status lain` : '';
+            const targetText = reduced.length ? `Status diturunkan [${topPreview}${suffix}]` : 'Belum ada status yang diturunkan (>0%)';
+            id('simInsight').textContent =
+                `${targetText}: pengurangan loop gabungan berpotensi menghemat ${tatSaved.toFixed(1)} hari, menurunkan avg portfolio ${portfolioDelta.toFixed(2)} hari/app, dan mengurangi breach ${breachDrop.toLocaleString()} case.`;
+        }
+
+        renderActionSimChart(currentPortfolioAvg, projectedPortfolioAvg, breachBase, breachProj);
+    }
+
+    function updateActionSimulator() {
+        ensureSimStatusControls(simStatusOrder || []);
+        recalcActionSimulator();
+    }
+
     function mkChart(id, type, l, d, lbl, c, ax='x') {
         if(charts[id]) charts[id].destroy();
         charts[id] = new Chart(document.getElementById(id), {
@@ -3176,7 +3549,7 @@ ${userText}`
         if(type === 'global') {
             apps = globalOutliers;
             title = "Global Outliers (E2E)";
-            infoText = `Showing ${apps.length} applications outlier (TAT > Q3 + 1.5Ã—IQR = ${globalStats.high.toFixed(1)} days)`;
+            infoText = `Showing ${apps.length} applications outlier (TAT > Q3 + 1.5xIQR = ${globalStats.high.toFixed(1)} days)`;
         } else if(type === 'status' && status) {
             apps = statusOutliers[status] || [];
             const stats = statusStats[status] || {};
