@@ -2673,12 +2673,44 @@ ${userText}`
                 grouped[key].completeMs = ev.completeMs;
             }
         });
-        return order.sort((a, b) => {
+        const sorted = order.sort((a, b) => {
             if (a.completeMs !== null && b.completeMs !== null) return a.completeMs - b.completeMs;
             if (a.completeMs !== null) return -1;
             if (b.completeMs !== null) return 1;
             return a.seq - b.seq;
         });
+        const merged = [];
+        sorted.forEach(ev => {
+            const curr = {
+                status: ev.status || 'Unknown',
+                statusList: [ev.status || 'Unknown'],
+                completeMs: ev.completeMs,
+                duration: safeNum(ev.duration, 0),
+                count: safeNum(ev.count, 1),
+                seq: ev.seq
+            };
+            if (!merged.length) {
+                merged.push(curr);
+                return;
+            }
+            const prev = merged[merged.length - 1];
+            const gapDays = getGapDays(prev.completeMs, curr.completeMs);
+            if (gapDays === 0) {
+                prev.duration += curr.duration;
+                prev.count += curr.count;
+                if (Number.isFinite(curr.completeMs) && (!Number.isFinite(prev.completeMs) || curr.completeMs > prev.completeMs)) {
+                    prev.completeMs = curr.completeMs;
+                }
+                if (curr.seq < prev.seq) prev.seq = curr.seq;
+                curr.statusList.forEach(st => {
+                    if (!prev.statusList.includes(st)) prev.statusList.push(st);
+                });
+                prev.status = prev.statusList.join(' + ');
+                return;
+            }
+            merged.push(curr);
+        });
+        return merged;
     }
 
     function bucketLabelForBottleneckLoan(limitValue) {
