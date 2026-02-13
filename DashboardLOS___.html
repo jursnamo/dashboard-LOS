@@ -467,9 +467,6 @@
             </div>
             <div class="mt-2 d-flex justify-content-between align-items-center">
                 <small class="text-muted">Klik bar untuk melihat detail per status</small>
-                <button class="btn btn-sm btn-outline-warning" onclick="showAllBottlenecks()">
-                    <i class="bi bi-list-ul me-1"></i>Lihat Semua Detail
-                </button>
             </div>
         </div>
 
@@ -764,6 +761,13 @@
                     </table>
                     <div class="small text-muted" id="slaNoDataInfo"></div>
                     <small class="text-muted">SLA Breach dihitung sebagai TAT status > outlier boundary status terpilih.</small>
+                    <div class="small mt-2 text-secondary" id="slaPriorityInfo">
+                        Rule Priority:
+                        <span class="badge bg-danger ms-1">High</span> jika n >= 30 dan breach >= 5%,
+                        <span class="badge bg-warning text-dark ms-1">Medium</span> jika n >= 30 dan breach >= 2%,
+                        <span class="badge bg-success ms-1">Low</span> selain itu.
+                        Breach% = breachCount / total aplikasi bucket × 100.
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -3380,33 +3384,6 @@ ${userText}`
         loopCanvas.ondragstart = () => false;
 
         new bootstrap.Modal(document.getElementById('bottleneckDetailModal')).show();
-    }
-
-    function showAllBottlenecks() {
-        if (!bottleneckMetrics.length) {
-            alert('Data bottleneck belum tersedia. Silakan proses data terlebih dahulu.');
-            return;
-        }
-        const summaryRows = [...bottleneckMetrics]
-            .sort((a,b) => b.avg - a.avg)
-            .slice(0, 30)
-            .map((x, i) => ({
-                id: `${i + 1}. ${x.stat}`,
-                branch: '-',
-                purp: 'Bottleneck Summary',
-                seg: `Cases: ${x.cases.toLocaleString()}`,
-                limit: x.totalTat,
-                tat: x.avg,
-                mon: '-',
-                displayMon: '-'
-            }));
-        showDetailModal(
-            'bottleneck',
-            summaryRows,
-            'Top Bottleneck Summary',
-            '#f59e0b',
-            `Klik bar di chart Top Bottlenecks untuk membuka analisis loop detail per status.`
-        );
     }
 
     function exportBottleneckData() {
