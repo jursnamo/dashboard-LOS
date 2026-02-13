@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -447,38 +447,38 @@
         <div class="upload-area" onclick="document.getElementById('fileIn').click()">
             <input type="file" id="fileIn" hidden accept=".xlsx,.xls,.csv">
             <div class="mb-4"><i class="bi bi-cloud-arrow-up-fill text-primary" style="font-size: 4rem;"></i></div>
-            <h4>Upload Data Loan</h4>
-            <p class="text-muted">Mendukung file .xlsx dan .csv. Pastikan file tidak sedang dibuka di Excel.</p>
+            <h4>Upload Loan Data</h4>
+            <p class="text-muted">Supports .xlsx and .csv files. Make sure the file is not open in Excel.</p>
         </div>
     </div>
 
     <div id="step2" class="step">
-        <h5 class="fw-bold text-primary mb-4 border-bottom pb-2">Konfigurasi Data Mapping</h5>
+        <h5 class="fw-bold text-primary mb-4 border-bottom pb-2">Data Mapping Configuration</h5>
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="map-box">
                     <span class="lbl"><i class="bi bi-person-badge me-1"></i> Identitas & Bisnis</span>
-                    <label class="small text-muted mt-2">ID Aplikasi (Unik)</label>
+                    <label class="small text-muted mt-2">Application ID (Unique)</label>
                     <select id="mId" class="form-select mb-2 col-sel"></select>
                     <label class="small text-muted">Segment Bisnis</label>
                     <select id="mSeg" class="form-select mb-2 col-sel"></select>
-                    <label class="small text-muted">Tujuan (Purpose)</label>
+                    <label class="small text-muted">Purpose</label>
                     <select id="mPurp" class="form-select mb-2 col-sel"></select>
                     <hr class="my-2">
-                    <label class="small text-muted">Approved Limit (Angka)</label>
+                    <label class="small text-muted">Approved Limit (Numeric)</label>
                     <select id="mLimit" class="form-select mb-2 col-sel"></select>
-                    <label class="small text-muted">Nama Cabang (Branch)</label>
+                    <label class="small text-muted">Branch Name</label>
                     <select id="mBranch" class="form-select col-sel"></select>
                 </div>
             </div>
             
             <div class="col-md-4">
                 <div class="map-box border-primary" style="background:#f8fbff; position: relative; z-index: 50;">
-                    <span class="lbl text-primary"><i class="bi bi-stopwatch me-1"></i> Mode Perhitungan</span>
+                    <span class="lbl text-primary"><i class="bi bi-stopwatch me-1"></i> Calculation Mode</span>
                     
                     <div class="mode-sw mt-2">
                         <div id="btn-date" class="mode-btn active" onclick="switchMode('date')">
-                            <i class="bi bi-calendar-range me-1"></i> Tanggal
+                            <i class="bi bi-calendar-range me-1"></i> Date
                         </div>
                         <div id="btn-tat" class="mode-btn" onclick="switchMode('tat')">
                             <i class="bi bi-123 me-1"></i> Kolom TAT
@@ -493,22 +493,22 @@
                     </div>
 
                     <div id="pan-tat" class="inp-p">
-                        <label class="small text-muted fw-bold text-primary">Pilih Kolom TAT/SLA</label>
+                        <label class="small text-muted fw-bold text-primary">Select TAT/SLA Column</label>
                         <select id="mTat" class="form-select col-sel form-select-sm"></select>
                     </div>
 
                     <hr class="my-2">
-                    <label class="small text-muted fw-bold">Booking Month (Untuk Grafik Tren)</label>
+                    <label class="small text-muted fw-bold">Booking Month (for Trend Chart)</label>
                     <select id="mMonth" class="form-select col-sel form-select-sm"></select>
-                    <label class="small text-muted fw-bold mt-2">Complete Date (Untuk timeline detail outlier)</label>
+                    <label class="small text-muted fw-bold mt-2">Complete Date (for Outlier Detail Timeline)</label>
                     <select id="mComplete" class="form-select col-sel form-select-sm"></select>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="map-box">
-                    <span class="lbl"><i class="bi bi-diagram-3 me-1"></i> Status Flow</span>
-                    <label class="small text-muted mt-2">Kolom Status</label>
+                    <span class="lbl"><i class="bi bi-diagram-3 me-1"></i> Flow Status</span>
+                    <label class="small text-muted mt-2">Status Column</label>
                     <select id="mStat" class="form-select mb-3 col-sel"></select>
                     <div class="alert alert-light border small text-muted">
                         <i class="bi bi-info-circle me-1"></i>
@@ -533,10 +533,10 @@
                         <i class="bi bi-info-circle-fill me-2 fs-5"></i>
                         <div>
                             <small class="fw-bold d-block">Outlier Definition:</small>
-                            <small>Data dengan TAT > <span class="fw-bold" id="outlierFormula">Q3 + 1.5×IQR</span>. Range normal: Q1=<span id="infoQ1">-</span> to Q3=<span id="infoQ3">-</span> hari.</small>
+                            <small>Data with TAT > <span class="fw-bold" id="outlierFormula">Q3 + 1.5Ã—IQR</span>. Normal range: Q1=<span id="infoQ1">-</span> to Q3=<span id="infoQ3">-</span> days.</small>
                             <small class="d-block mt-1">
                                 <i class="bi bi-currency-dollar me-1"></i>
-                                <span class="limit-info">Limit Calculation:</span> Hanya aplikasi dengan limit > 0 yang dihitung untuk total & average limit.
+                                <span class="limit-info">Limit Calculation:</span> Only applications with limit > 0 are included in total & average limit.
                                 <span id="limitCalcInfo">-</span>
                             </small>
                         </div>
@@ -556,16 +556,16 @@
                 <span id="avgLimitSubText">Average Ticket Size</span>
                 <div class="mt-1" id="avgLimitInfoBadge"></div>
             </div></div></div>
-            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#6366f1; background:#f5f3ff"><div class="kpi-title">Average TAT</div><div class="kpi-val" id="vAvg">-</div><div class="kpi-sub">Hari</div></div></div>
-            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Modus (Mode)</div><div class="kpi-val" id="vMode">-</div><div class="kpi-sub">Hari</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#6366f1; background:#f5f3ff"><div class="kpi-title">Average TAT</div><div class="kpi-val" id="vAvg">-</div><div class="kpi-sub">Days</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Mode</div><div class="kpi-val" id="vMode">-</div><div class="kpi-sub">Days</div></div></div>
         </div>
         
         <div class="row g-2">
-            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q1', q1Apps)" style="border-left-color:#3b82f6; background:#eff6ff"><div class="kpi-title">Quartile 1 (25%)</div><div class="kpi-val" id="vQ1">-</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
-            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('median', medianApps)" style="border-left-color:#8b5cf6; background:#f3f0ff"><div class="kpi-title">Median TAT</div><div class="kpi-val" id="vMed">-</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
-            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q3', q3Apps)" style="border-left-color:#f59e0b; background:#fffbeb"><div class="kpi-title">Quartile 3 (75%)</div><div class="kpi-val" id="vQ3">-</div><div class="kpi-sub">Hari <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q1', q1Apps)" style="border-left-color:#3b82f6; background:#eff6ff"><div class="kpi-title">Quartile 1 (25%)</div><div class="kpi-val" id="vQ1">-</div><div class="kpi-sub">Days <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('median', medianApps)" style="border-left-color:#8b5cf6; background:#f3f0ff"><div class="kpi-title">Median TAT</div><div class="kpi-val" id="vMed">-</div><div class="kpi-sub">Days <i class="bi bi-eye ms-1 small"></i></div></div></div>
+            <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showAppsInRange('q3', q3Apps)" style="border-left-color:#f59e0b; background:#fffbeb"><div class="kpi-title">Quartile 3 (75%)</div><div class="kpi-val" id="vQ3">-</div><div class="kpi-sub">Days <i class="bi bi-eye ms-1 small"></i></div></div></div>
             <div class="col-md-2"><div class="kpi-card" style="border-left-color:#7c3aed; background:#f5f3ff"><div class="kpi-title">IQR (Q3-Q1)</div><div class="kpi-val" id="vIQR">-</div><div class="kpi-sub">Interquartile Range</div></div></div>
-            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Outlier Boundary</div><div class="kpi-val" id="vOutBoundary">-</div><div class="kpi-sub">Q3 + 1.5×IQR</div></div></div>
+            <div class="col-md-2"><div class="kpi-card" style="border-left-color:#d946ef; background:#fdf4ff"><div class="kpi-title">Outlier Boundary</div><div class="kpi-val" id="vOutBoundary">-</div><div class="kpi-sub">Q3 + 1.5Ã—IQR</div></div></div>
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showOutliersModal('global')" style="border-left-color:#ef4444; background:#fef2f2"><div class="kpi-title text-danger">Total Outliers</div><div class="kpi-val text-danger" id="vOut">-</div><div class="kpi-sub">Click for details</div></div></div>
         </div>
 
@@ -574,8 +574,8 @@
             <div class="col-md-12">
                 <div class="chart-card border-warning">
                     <div class="chart-head text-warning">
-                        <span><i class="bi bi-bullseye me-2"></i>Peta Sebaran Outlier (5 Kategori)</span>
-                        <span class="small text-muted">Klik titik untuk detail per aplikasi</span>
+                        <span><i class="bi bi-bullseye me-2"></i>Outlier Distribution Map (5 Categories)</span>
+                        <span class="small text-muted">Click a point for application details</span>
                     </div>
                     <div class="mb-2" id="scatterLegend">
                         <!-- Legend akan diisi oleh JavaScript -->
@@ -589,7 +589,7 @@
                 <div class="chart-card border-info">
                     <div class="chart-head text-info">
                         <span><i class="bi bi-graph-up me-2"></i>TAT vs Loan Size (Limit Approved)</span>
-                        <span class="small text-muted">Klik titik untuk detail per aplikasi</span>
+                        <span class="small text-muted">Click a point for application details</span>
                     </div>
                     <div class="mb-2" id="loanSizeLegend">
                         <!-- Legend akan diisi oleh JavaScript -->
@@ -600,12 +600,12 @@
             
             <div class="col-md-12">
                 <div class="chart-card">
-                    <div class="chart-head"><span><i class="bi bi-list-ul me-2"></i>Detail Outlier per Status</span>
-                        <span class="small text-muted">IQR = Q3 - Q1 | Boundary = Q3 + 1.5×IQR</span>
+                    <div class="chart-head"><span><i class="bi bi-list-ul me-2"></i>Outlier Detail by Status</span>
+                        <span class="small text-muted">IQR = Q3 - Q1 | Boundary = Q3 + 1.5Ã—IQR</span>
                     </div>
                     <div style="overflow-y:auto; height: 350px;">
                         <table class="table-custom status-table-small">
-                            <thead><tr><th class="text-start">Status Flow</th><th>Avg</th><th>Q1</th><th>Med</th><th>Q3</th><th>IQR</th><th>Boundary</th><th>Outlier</th></tr></thead>
+                            <thead><tr><th class="text-start">Flow Status</th><th>Avg</th><th>Q1</th><th>Med</th><th>Q3</th><th>IQR</th><th>Boundary</th><th>Outlier</th></tr></thead>
                             <tbody id="tblStatus"></tbody>
                         </table>
                     </div>
@@ -613,7 +613,7 @@
             </div>
         </div>
         
-        <h6 class="section-title">5. LEAD TIME (HARI)</h6>
+        <h6 class="section-title">3. PROCESS HEALTH CHECK</h6>
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="chart-card border-danger">
@@ -646,7 +646,7 @@
                             </div>
                             <div class="chart-head text-danger d-flex justify-content-between">
                                 <span><i class="bi bi-exclamation-diamond me-2"></i>Top 5 Priority Status</span>
-                                <span class="small text-muted">Urut berdasarkan Impact % tertinggi</span>
+                                <span class="small text-muted">Sorted by highest Impact %</span>
                             </div>
                             <div class="table-responsive" style="max-height:260px;">
                                 <table class="table table-sm table-striped mb-0">
@@ -662,7 +662,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="mgmtActionTable">
-                                        <tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>
+                                        <tr><td colspan="7" class="text-center text-muted">No data yet</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -675,15 +675,18 @@
                             </div>
                             <div class="small text-muted mb-2" id="mgmtActionSummary">Menunggu data...</div>
                             <div id="mgmtActionReco" class="small">
-                                <div class="text-muted">Belum ada rekomendasi.</div>
+                                <div class="text-muted">No recommendations yet.</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <h6 class="section-title mt-1">5. Lead Time (Days)</h6>
+            </div>
             <div class="col-md-6">
                 <div class="chart-card">
-                    <div class="chart-head">Distribusi TAT (6 Kategori) <span class="small text-primary">Klik batang untuk detail per bucket</span></div>
+                    <div class="chart-head">TAT Distribution (6 Buckets) <span class="small text-primary">Click bar for bucket details</span></div>
                     <div style="height: 250px;"><canvas id="cDist"></canvas></div>
                     <div id="distChartInfo" class="small text-muted mt-2"></div>
                 </div>
@@ -695,7 +698,7 @@
                 </div>
             </div>
             <div class="mt-2 d-flex justify-content-between align-items-center">
-                <small class="text-muted">Klik bar untuk melihat detail per status</small>
+                <small class="text-muted">Click bar to view status details</small>
             </div>
         </div>
 
@@ -703,7 +706,7 @@
         <div class="row g-4 mb-3">
             <div class="col-md-6">
                 <div class="chart-card chart-clickable" onclick="showTrendDetail()">
-                    <div class="chart-head">Tren Volume & Limit <span class="small text-primary">Click for details</span></div>
+                    <div class="chart-head">Volume & Limit Trend <span class="small text-primary">Click for details</span></div>
                     <div style="height: 250px;"><canvas id="cTrendMix"></canvas></div>
                     <div id="trendChartInfo" class="small text-muted mt-2"></div>
                 </div>
@@ -724,13 +727,13 @@
     <div class="modal-dialog modal-dialog-centered" style="max-width: 86vw; width: 86vw;">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header" id="detailModalHeader">
-                <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-list-check me-2"></i>Detail Aplikasi</h5>
+                <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-list-check me-2"></i>Application Detail</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeDetailModal()"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info py-2 mb-3">
                     <i class="bi bi-info-circle me-2"></i>
-                    <span id="detailInfoText">Menampilkan detail aplikasi</span>
+                    <span id="detailInfoText">Showing application details</span>
                 </div>
                 <div class="row mb-3" id="detailSummaryCards">
                     <!-- Summary cards will be inserted here -->
@@ -738,7 +741,7 @@
                 <div class="mb-3">
                     <div class="input-group input-group-sm" style="width: 300px;">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" id="detailSearch" class="form-control" placeholder="Cari berdasarkan App ID, Branch, atau Purpose..." onkeyup="filterDetailTable()">
+                        <input type="text" id="detailSearch" class="form-control" placeholder="Search by App ID, Branch, or Purpose..." onkeyup="filterDetailTable()">
                     </div>
                 </div>
                 <div class="table-responsive" style="max-height:500px">
@@ -767,13 +770,13 @@
     <div class="modal-dialog modal-dialog-centered" style="max-width: 88vw; width: 88vw;">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header" id="singleAppModalHeader">
-                <h5 class="modal-title" id="singleAppModalLabel"><i class="bi bi-file-earmark-text me-2"></i>Detail Aplikasi</h5>
+                <h5 class="modal-title" id="singleAppModalLabel"><i class="bi bi-file-earmark-text me-2"></i>Application Detail</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeSingleAppModal()"></button>
             </div>
             <div class="modal-body">
                 <div class="alert" id="singleAppAlert">
                     <i class="bi bi-info-circle me-2"></i>
-                    <span id="singleAppInfoText">Detail aplikasi</span>
+                    <span id="singleAppInfoText">Detail applications</span>
                 </div>
                 
                 <div class="row mb-4">
@@ -809,7 +812,7 @@
                             <div class="card-body">
                                 <h6 class="card-title fw-bold mb-3" id="singleAppStatTitle"><i class="bi bi-graph-up me-2"></i>Statistic Performance</h6>
                                 <div class="app-detail-row d-flex">
-                                    <span class="app-detail-label">TAT (Hari):</span>
+                                    <span class="app-detail-label">TAT (Days):</span>
                                     <span class="app-detail-value fw-bold" id="singleAppTat">-</span>
                                 </div>
                                 <div class="app-detail-row d-flex">
@@ -848,13 +851,13 @@
                             <div class="col-md-4 text-center">
                                 <div class="mb-2">
                                     <div class="h4 mb-0" id="singleAppDaysAboveQ3">-</div>
-                                    <div class="small text-muted">Hari di atas Q3</div>
+                                    <div class="small text-muted">Days above Q3</div>
                                 </div>
                             </div>
                             <div class="col-md-4 text-center">
                                 <div class="mb-2">
                                     <div class="h4 mb-0" id="singleAppDaysAboveOutlierBoundary">-</div>
-                                    <div class="small text-muted">Hari di atas Boundary</div>
+                                    <div class="small text-muted">Days di atas Boundary</div>
                                 </div>
                             </div>
                         </div>
@@ -866,7 +869,7 @@
                             </div>
                             <div class="mt-2 small text-muted">
                                 <i class="bi bi-info-circle me-1"></i>
-                                <span id="singleAppAnalysisText">Analisis posisi TAT aplikasi terhadap distribusi normal</span>
+                                <span id="singleAppAnalysisText">Analisis posisi TAT applications terhadap distribusi normal</span>
                             </div>
                         </div>
                     </div>
@@ -875,7 +878,7 @@
                 <div class="card mt-3" id="singleAppRepeatCard">
                     <div class="card-header py-2 d-flex justify-content-between align-items-center">
                         <div class="fw-bold">
-                            <i class="bi bi-arrow-repeat me-1"></i>Total TAT per Status
+                            <i class="bi bi-arrow-repeat me-1"></i>Total TAT by Status
                         </div>
                         <span class="repeat-badge" id="singleAppRepeatTotal">Total Return: 0x</span>
                     </div>
@@ -907,7 +910,7 @@
                     <div class="card-body">
                         <div class="flow-timeline-wrap">
                             <div class="flow-timeline" id="singleAppFlowTimeline">
-                                <div class="small text-muted">Data flow belum tersedia</div>
+                                <div class="small text-muted">Flow data is not available yet</div>
                             </div>
                         </div>
                     </div>
@@ -915,7 +918,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="singleAppShowAllBtn" onclick="showAllOutliersFromSingle()">
-                    <i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier
+                    <i class="bi bi-list-ul me-1"></i>Show All Outliers
                 </button>
             </div>
         </div>
@@ -936,7 +939,7 @@
                     <div class="small"><strong>Status:</strong> <span id="bottleneckStatusHeader">-</span></div>
                 </div>
 
-                <h6 class="section-title">1. KPI Ringkasan</h6>
+                <h6 class="section-title">1. KPI Summary</h6>
                 <div class="row mb-3" id="bottleneckSummaryCards">
                     <!-- Akan diisi oleh JavaScript -->
                 </div>
@@ -993,7 +996,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Loan Size</th>
-                                <th class="text-end">Total Aplikasi</th>
+                                <th class="text-end">Total Applications</th>
                                 <th class="text-end">Loop Frequency Distribution</th>
                                 <th class="text-end">Avg TAT</th>
                                 <th class="text-end">Outlier Boundary (Status)</th>
@@ -1004,13 +1007,13 @@
                         <tbody id="slaImpactTable"></tbody>
                     </table>
                     <div class="small text-muted" id="slaNoDataInfo"></div>
-                    <small class="text-muted">SLA Breach dihitung sebagai TAT status > outlier boundary status terpilih.</small>
+                    <small class="text-muted">SLA Breach is calculated as status TAT > selected status outlier boundary.</small>
                     <div class="small mt-2 text-secondary" id="slaPriorityInfo">
                         Rule Priority:
-                        <span class="badge bg-danger ms-1">High</span> jika n >= 30 dan breach >= 5%,
-                        <span class="badge bg-warning text-dark ms-1">Medium</span> jika n >= 30 dan breach >= 2%,
-                        <span class="badge bg-success ms-1">Low</span> selain itu.
-                        Breach% = breachCount / total aplikasi bucket × 100.
+                        <span class="badge bg-danger ms-1">High</span> if n >= 30 and breach >= 5%,
+                        <span class="badge bg-warning text-dark ms-1">Medium</span> if n >= 30 and breach >= 2%,
+                        <span class="badge bg-success ms-1">Low</span> otherwise.
+                        Breach% = breachCount / total applications bucket Ã— 100.
                     </div>
                 </div>
             </div>
@@ -1056,14 +1059,14 @@
     const GEMINI_API_KEY = ''; // Isi sendiri secret key Gemini Anda
     const GEMINI_MODEL = 'gemini-2.0-flash';
     
-    // PERUBAHAN: Update bucket distribusi TAT - <7 hari bukan <8 hari
+    // PERUBAHAN: Update bucket distribusi TAT - <7 days bukan <8 days
     const tatBuckets = [
-        { label: '<7 hari', min: 0, max: 6.999 },
-        { label: '<14 hari', min: 7, max: 13.999 },
-        { label: '<30 hari', min: 14, max: 29.999 },
-        { label: '<60 hari', min: 30, max: 59.999 },
-        { label: '<90 hari', min: 60, max: 89.999 },
-        { label: '≥90 hari', min: 90, max: Infinity }
+        { label: '<7 days', min: 0, max: 6.999 },
+        { label: '<14 days', min: 7, max: 13.999 },
+        { label: '<30 days', min: 14, max: 29.999 },
+        { label: '<60 days', min: 30, max: 59.999 },
+        { label: '<90 days', min: 60, max: 89.999 },
+        { label: 'â‰¥90 days', min: 90, max: Infinity }
     ];
 
     // NEW: Loan size buckets (dalam juta)
@@ -1166,10 +1169,10 @@
             .slice()
             .sort((a,b)=>b.avg-a.avg)
             .slice(0,3)
-            .map(x => `${x.stat}: ${safeNum(x.avg,0).toFixed(1)} hari`)
+            .map(x => `${x.stat}: ${safeNum(x.avg,0).toFixed(1)} days`)
             .join(' | ') || '-';
         return [
-            `Total Aplikasi: ${total}`,
+            `Total Applications: ${total}`,
             `Average TAT: ${avgTat}`,
             `Jumlah Outlier: ${outlier}`,
             `Top Bottleneck: ${bottleneck}`
@@ -1207,7 +1210,7 @@ ${userText}`
             throw new Error(`Gemini error ${res.status}: ${err}`);
         }
         const data = await res.json();
-        return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Tidak ada jawaban.';
+        return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
     }
 
     async function sendAIChat() {
@@ -1290,7 +1293,7 @@ ${userText}`
     
     function fillSel(h) {
         document.querySelectorAll('.col-sel').forEach(s => {
-            s.innerHTML = '<option disabled selected>Pilih...</option>';
+            s.innerHTML = '<option disabled selected>Select...</option>';
             h.forEach(x => { let o = document.createElement('option'); o.value = x; o.text = x; s.appendChild(o); });
         });
         const auto = (id, keys) => {
@@ -1354,7 +1357,7 @@ ${userText}`
             stat: document.getElementById('mStat').value
         };
 
-        if(!m.id || !m.stat) { alert("ID Aplikasi dan Status wajib dipilih!"); return; }
+        if(!m.id || !m.stat) { alert("Application ID and Status are required!"); return; }
 
         const apps = {}, statusAgg = {};
         appFlowEvents = {};
@@ -1502,10 +1505,10 @@ ${userText}`
         // Sort by TAT for quartile calculations
         e2eData.sort((a, b) => a.tat - b.tat);
         
-        // Filter aplikasi dengan limit positif (> 0) untuk perhitungan limit
+        // Filter applications dengan limit positif (> 0) untuk perhitungan limit
         appsWithPositiveLimit = e2eData.filter(app => app.limit > 0);
         
-        // Metrics Calculation - PERBAIKAN: Hanya hitung limit dari aplikasi dengan limit > 0
+        // Metrics Calculation - PERBAIKAN: Hanya hitung limit dari applications with limit > 0
         const totalApps = e2eData.length;
         const appsWithZeroOrNegativeLimit = e2eData.filter(app => app.limit <= 0).length;
         const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
@@ -1528,7 +1531,7 @@ ${userText}`
         document.getElementById('kTotalApp').innerText = totalApps.toLocaleString();
         document.getElementById('kAvgAppMonth').innerText = (totalApps/uniqueMonths).toFixed(0);
         
-        // PERBAIKAN: Hanya hitung total limit dari aplikasi dengan limit > 0
+        // PERBAIKAN: Hanya hitung total limit dari applications with limit > 0
         document.getElementById('kTotalLimit').innerText = formatIDR(totalLimit);
         
         // Update subtitle dengan info limit
@@ -1537,13 +1540,13 @@ ${userText}`
         
         if (appsWithZeroOrNegativeLimit > 0) {
             limitSubText.innerHTML = `Portfolio Exposure`;
-            limitInfoBadge.innerHTML = `<span class="limit-info">Hanya dari ${appsWithPositiveLimit.length} apps (${appsWithZeroOrNegativeLimit} apps tanpa limit)</span>`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">Only from ${appsWithPositiveLimit.length} apps (${appsWithZeroOrNegativeLimit} apps without limit)</span>`;
         } else {
             limitSubText.innerHTML = `Portfolio Exposure`;
-            limitInfoBadge.innerHTML = `<span class="limit-info">Semua ${totalApps} apps memiliki limit</span>`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">All ${totalApps} apps have limits</span>`;
         }
         
-        // PERBAIKAN: Average limit hanya dari aplikasi dengan limit > 0
+        // PERBAIKAN: Average limit hanya dari applications with limit > 0
         const avgLimit = appsWithPositiveLimit.length > 0 ? totalLimit / appsWithPositiveLimit.length : 0;
         document.getElementById('kAvgLimit').innerText = formatIDR(avgLimit);
         
@@ -1553,15 +1556,15 @@ ${userText}`
         
         if (appsWithPositiveLimit.length > 0) {
             avgLimitSubText.innerHTML = `Average Ticket Size`;
-            avgLimitInfoBadge.innerHTML = `<span class="limit-info">Dari ${appsWithPositiveLimit.length} apps dengan limit > 0</span>`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-info">From ${appsWithPositiveLimit.length} apps with limit > 0</span>`;
         } else {
             avgLimitSubText.innerHTML = `Average Ticket Size`;
-            avgLimitInfoBadge.innerHTML = `<span class="limit-warning">Tidak ada aplikasi dengan limit > 0</span>`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-warning">No applications with limit > 0</span>`;
         }
         
         // Update info panel tentang perhitungan limit
         document.getElementById('limitCalcInfo').innerHTML = 
-            `Dari ${totalApps} aplikasi, ${appsWithPositiveLimit.length} memiliki limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit ≤ 0 tidak dihitung).`;
+            `From ${totalApps} applications, ${appsWithPositiveLimit.length} have limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit â‰¤ 0 excluded from calculation).`;
         
         // Update Stats KPIs
         document.getElementById('vAvg').innerText = globalStats.avg.toFixed(1);
@@ -1580,7 +1583,7 @@ ${userText}`
         document.getElementById('infoQ1').innerText = globalStats.q1.toFixed(1);
         document.getElementById('infoQ3').innerText = globalStats.q3.toFixed(1);
         document.getElementById('outlierFormula').innerHTML = 
-            `${globalStats.q3.toFixed(1)} + 1.5×${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} hari`;
+            `${globalStats.q3.toFixed(1)} + 1.5Ã—${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} days`;
 
         // Create Charts
         createCharts(e2eData, globalStats, statusAgg, apps);
@@ -1608,7 +1611,7 @@ ${userText}`
                 
                 // Coba format MM/DD/YYYY (5/1/2025 = 5 Januari 2025)
                 if (part1 <= 12 && part2 <= 31 && part3 > 1000) {
-                    // part1 adalah bulan, part2 adalah hari, part3 adalah tahun
+                    // part1 adalah bulan, part2 adalah days, part3 adalah tahun
                     const year = part3;
                     const month = part1 - 1;
                     const day = part2;
@@ -1616,7 +1619,7 @@ ${userText}`
                 }
                 // Coba format DD/MM/YYYY (1/5/2025 = 1 Mei 2025)
                 else if (part2 <= 12 && part1 <= 31 && part3 > 1000) {
-                    // part1 adalah hari, part2 adalah bulan, part3 adalah tahun
+                    // part1 adalah days, part2 adalah bulan, part3 adalah tahun
                     const year = part3;
                     const month = part2 - 1;
                     const day = part1;
@@ -1663,7 +1666,7 @@ ${userText}`
                 trendData[d.mon].cntPositiveLimit++;
                 trendData[d.mon].limPositive += d.limit;
             }
-            // Catat semua limit (termasuk ≤ 0) untuk reference
+            // Catat semua limit (termasuk â‰¤ 0) untuk reference
             trendData[d.mon].lim += d.limit;
         });
 
@@ -1685,7 +1688,7 @@ ${userText}`
                 branchData[d.branch].cntPositiveLimit++;
                 branchData[d.branch].limPositive += d.limit;
             }
-            // Catat semua limit (termasuk ≤ 0) untuk reference
+            // Catat semua limit (termasuk â‰¤ 0) untuk reference
             branchData[d.branch].lim += d.limit;
         });
 
@@ -1770,7 +1773,7 @@ ${userText}`
                             if(elements.length > 0) {
                                 const monthKey = sortedMonthKeys[elements[0].index];
                                 showDetailModal('trend', trendData[monthKey].apps, 
-                                    `Aplikasi Bulan: ${trendData[monthKey].display || monthKey}`);
+                                    `Monthly Applications: ${trendData[monthKey].display || monthKey}`);
                             }
                         }
                     },
@@ -1796,7 +1799,7 @@ ${userText}`
                     if(elements.length > 0) {
                         const monthKey = sortedMonthKeys[elements[0].index];
                         showDetailModal('trend', trendData[monthKey].apps, 
-                            `Aplikasi Bulan: ${trendData[monthKey].display || monthKey}`);
+                            `Monthly Applications: ${trendData[monthKey].display || monthKey}`);
                     }
                 },
                 scales: { 
@@ -1831,7 +1834,7 @@ ${userText}`
                         callbacks: {
                             label: function(context) {
                                 if(context.datasetIndex === 0) {
-                                    return `Volume: ${context.parsed.y} aplikasi`;
+                                    return `Volume: ${context.parsed.y} applications`;
                                 } else {
                                     const monthKey = sortedMonthKeys[context.dataIndex];
                                     const data = trendData[monthKey];
@@ -1845,7 +1848,7 @@ ${userText}`
                                 
                                 if(context.datasetIndex === 0) {
                                     return [
-                                        `Aplikasi dengan limit > 0: ${data.cntPositiveLimit}`,
+                                        `Applications with limit > 0: ${data.cntPositiveLimit}`,
                                         `Total Limit (hanya >0): ${formatIDR(data.limPositive)}`,
                                         `Avg Limit (hanya >0): ${formatIDR(data.cntPositiveLimit > 0 ? data.limPositive / data.cntPositiveLimit : 0)}`
                                     ].join('\n');
@@ -1879,9 +1882,9 @@ ${userText}`
         const trendChartInfo = document.getElementById('trendChartInfo');
         const totalWithPositiveLimit = e2eData.filter(app => app.limit > 0).length;
         trendChartInfo.innerHTML = 
-            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Average Limit hanya dihitung dari ${totalWithPositiveLimit} aplikasi dengan limit > 0 (${e2eData.length} total apps)</span>`;
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Average Limit is calculated only from ${totalWithPositiveLimit} applications with limit > 0 (${e2eData.length} total apps)</span>`;
 
-        // Branch Chart - Top 10 berdasarkan aplikasi dengan limit positif
+        // Branch Chart - Top 10 berdasarkan applications dengan limit positif
         const topBr = Object.entries(branchData)
             .map(([branch, data]) => ({
                 branch, 
@@ -1925,7 +1928,7 @@ ${userText}`
                 onClick: (evt, elements) => {
                     if(elements.length > 0) {
                         const branch = topBr[elements[0].index];
-                        showDetailModal('branch', branch.apps, `Aplikasi Cabang: ${branch.branch}`);
+                        showDetailModal('branch', branch.apps, `Branch Applications: ${branch.branch}`);
                     }
                 },
                 scales: {
@@ -1933,7 +1936,7 @@ ${userText}`
                         stacked: false,
                         title: {
                             display: true,
-                            text: 'Jumlah Aplikasi'
+                            text: 'Number of Applications'
                         }
                     }
                 },
@@ -1966,9 +1969,9 @@ ${userText}`
         const branchChartInfo = document.getElementById('branchChartInfo');
         const totalBranches = Object.keys(branchData).length;
         branchChartInfo.innerHTML = 
-            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Top 10 cabang berdasarkan aplikasi dengan limit > 0 (${totalBranches} total cabang)</span>`;
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Top 10 branches by applications with limit > 0 (${totalBranches} total branches)</span>`;
 
-        // TAT Distribution Chart - DENGAN 6 BUCKET (sudah diupdate ke <7 hari)
+        // TAT Distribution Chart - DENGAN 6 BUCKET (sudah diupdate ke <7 days)
         const distributionLabels = Object.keys(tatDistributionData);
         const distributionCounts = distributionLabels.map(label => tatDistributionData[label].cnt);
         
@@ -1982,7 +1985,7 @@ ${userText}`
             data: {
                 labels: distributionLabels,
                 datasets: [{
-                    label: 'Jumlah Aplikasi',
+                    label: 'Number of Applications',
                     data: distributionCounts,
                     backgroundColor: distributionColors,
                     borderColor: distributionColors,
@@ -1990,7 +1993,7 @@ ${userText}`
                     onClick: (evt, elements) => {
                         if(elements.length > 0) {
                             const bucketLabel = distributionLabels[elements[0].index];
-                            showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Aplikasi dengan TAT: ${bucketLabel}`);
+                            showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Applications with TAT: ${bucketLabel}`);
                         }
                     }
                 }]
@@ -2001,7 +2004,7 @@ ${userText}`
                 onClick: (evt, elements) => {
                     if(elements.length > 0) {
                         const bucketLabel = distributionLabels[elements[0].index];
-                        showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Aplikasi dengan TAT: ${bucketLabel}`);
+                        showDetailModal('distribution', tatDistributionData[bucketLabel].apps, `Applications with TAT: ${bucketLabel}`);
                     }
                 },
                 scales: {
@@ -2009,7 +2012,7 @@ ${userText}`
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Jumlah Aplikasi'
+                            text: 'Number of Applications'
                         },
                         ticks: {
                             precision: 0,
@@ -2044,7 +2047,7 @@ ${userText}`
                             afterTitle: function(context) {
                                 const bucket = tatBuckets.find(b => b.label === context[0].label);
                                 if (bucket) {
-                                    return `Range: ${bucket.min === 0 ? '0' : bucket.min} - ${bucket.max === Infinity ? '∞' : bucket.max} hari`;
+                                    return `Range: ${bucket.min === 0 ? '0' : bucket.min} - ${bucket.max === Infinity ? 'âˆž' : bucket.max} days`;
                                 }
                                 return '';
                             }
@@ -2060,7 +2063,7 @@ ${userText}`
         // Update distribution chart info
         const distChartInfo = document.getElementById('distChartInfo');
         distChartInfo.innerHTML = 
-            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>Sekarang bucket pertama adalah <7 hari (bukan <8 hari). Total 6 bucket distribusi. Total Limit hanya dihitung dari aplikasi dengan limit > 0 dalam setiap bucket</span>`;
+            `<span class="limit-info"><i class="bi bi-info-circle me-1"></i>The first bucket is now <7 days (not <8 days). There are 6 distribution buckets. Total Limit is calculated only from applications with limit > 0 in each bucket.</span>`;
 
         // PERBAIKAN: Status buckets for outlier analysis - SAMAKAN PERHITUNGAN DENGAN TOP BOTTLENECKS
         const stBuckets = {};
@@ -2127,7 +2130,7 @@ ${userText}`
         renderAvgStepPerStatusChart();
         renderManagementActionBoard(stMetrics);
 
-        // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps dengan limit > 0, GUNAKAN PURPOSE NORMALIZED
+        // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps with limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
         e2eData.forEach(d => { 
             if (d.limit > 0) {
@@ -2191,11 +2194,11 @@ ${userText}`
         const scatterLegend = document.getElementById('scatterLegend');
         scatterLegend.innerHTML = `
             <div class="scatter-legend">
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} hari</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} days</div>
             </div>
         `;
         
@@ -2213,13 +2216,13 @@ ${userText}`
                         const pt = ds[datasetIndex].data[dataIndex];
                         const app = pt.full;
                         
-                        // Tampilkan detail aplikasi
+                        // Tampilkan detail applications
                         showSingleAppDetail(app);
                     } 
                 },
                 scales: { 
                     x: {
-                        title: {display:true, text:'Hari (E2E)'},
+                        title: {display:true, text:'Days (E2E)'},
                         min: 0,
                         suggestedMax: Math.max(...e2eData.map(d => d.tat)) * 1.1,
                         afterBuildTicks: function(axis) {
@@ -2304,7 +2307,7 @@ ${userText}`
                                 const boundary = globalStats.high;
                                 const limitStatus = app.limit > 0 ? 
                                     `Limit: ${formatIDR(app.limit)} (Positif)` : 
-                                    `Limit: ${formatIDR(app.limit)} (Tidak dihitung dalam total)`;
+                                    `Limit: ${formatIDR(app.limit)} (Excluded from total)`;
                                 
                                 // Tentukan kategori berdasarkan dataset
                                 let category = "";
@@ -2312,23 +2315,23 @@ ${userText}`
                                 switch(context.datasetIndex) {
                                     case 0: 
                                         category = "< Q1";
-                                        categoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} hari)`;
+                                        categoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} days)`;
                                         break;
                                     case 1: 
                                         category = "Q1 - Median";
-                                        categoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} ≤ TAT < ${globalStats.med.toFixed(1)} hari)`;
+                                        categoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} â‰¤ TAT < ${globalStats.med.toFixed(1)} days)`;
                                         break;
                                     case 2: 
                                         category = "Median - Q3";
-                                        categoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} ≤ TAT < ${globalStats.q3.toFixed(1)} hari)`;
+                                        categoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} â‰¤ TAT < ${globalStats.q3.toFixed(1)} days)`;
                                         break;
                                     case 3: 
                                         category = "Q3 - Boundary";
-                                        categoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} ≤ TAT ≤ ${boundary.toFixed(1)} hari)`;
+                                        categoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} â‰¤ TAT â‰¤ ${boundary.toFixed(1)} days)`;
                                         break;
                                     case 4: 
                                         category = "Outlier";
-                                        categoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} hari)`;
+                                        categoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} days)`;
                                         break;
                                 }
                                 
@@ -2342,11 +2345,11 @@ ${userText}`
                                     `App ID: ${app.id}`,
                                     `Branch: ${app.branch}`,
                                     purposeInfo,
-                                    `TAT: ${app.tat.toFixed(1)} hari`,
-                                    `Kategori: ${category}`,
+                                    `TAT: ${app.tat.toFixed(1)} days`,
+                                    `Category: ${category}`,
                                     categoryDesc,
                                     limitStatus,
-                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5×${iqr.toFixed(1)} = ${boundary.toFixed(1)} hari`
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5Ã—${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
                                 ];
                             }
                         }
@@ -2377,12 +2380,12 @@ ${userText}`
 
     // NEW FUNCTION: Create TAT vs Loan Size Scatter Chart
     function createLoanSizeScatterChart(e2eData, globalStats) {
-        // Filter hanya aplikasi dengan limit > 0
+        // Filter hanya applications with limit > 0
         const filteredData = e2eData.filter(app => app.limit > 0);
         
         if (filteredData.length === 0) {
             document.getElementById('loanSizeLegend').innerHTML = 
-                '<div class="alert alert-warning p-2 mb-2">Tidak ada data aplikasi dengan limit > 0 untuk ditampilkan.</div>';
+                '<div class="alert alert-warning p-2 mb-2">No application data with limit > 0 to display.</div>';
             return;
         }
         
@@ -2432,14 +2435,14 @@ ${userText}`
         const loanSizeLegend = document.getElementById('loanSizeLegend');
         loanSizeLegend.innerHTML = `
             <div class="scatter-legend">
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} hari)</div>
-                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} hari</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#10b981"></div>TAT < Q1 (${globalStats.q1.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#27D6F5"></div>Q1 - Median (${globalStats.med.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#3b82f6"></div>Median - Q3 (${globalStats.q3.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#f59e0b"></div>Q3 - Boundary (${globalStats.high.toFixed(1)} days)</div>
+                <div class="scatter-legend-item"><div class="scatter-legend-color" style="background-color:#ef4444"></div>Outlier: TAT > ${globalStats.high.toFixed(1)} days</div>
             </div>
             <div class="mt-2">
-                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Sumbu X: Kategori Loan Size (${loanSizeBuckets.map(b => b.label).join(', ')})</small>
+                <small class="text-muted"><i class="bi bi-info-circle me-1"></i>X Axis: Loan Size Category (${loanSizeBuckets.map(b => b.label).join(', ')})</small>
             </div>
         `;
         
@@ -2460,7 +2463,7 @@ ${userText}`
                         const pt = loanSizeDatasets[datasetIndex].data[dataIndex];
                         const app = pt.full;
                         
-                        // Tampilkan detail aplikasi
+                        // Tampilkan detail applications
                         showSingleAppDetail(app);
                     } 
                 },
@@ -2485,7 +2488,7 @@ ${userText}`
                     y: {
                         title: {
                             display: true,
-                            text: 'TAT (Hari)'
+                            text: 'TAT (Days)'
                         },
                         beginAtZero: true,
                         // Buat skala Y dinamis berdasarkan data
@@ -2558,23 +2561,23 @@ ${userText}`
                                 switch(context.datasetIndex) {
                                     case 0: 
                                         tatCategory = "< Q1";
-                                        tatCategoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} hari)`;
+                                        tatCategoryDesc = `Termasuk dalam 25% tercepat (TAT < ${globalStats.q1.toFixed(1)} days)`;
                                         break;
                                     case 1: 
                                         tatCategory = "Q1 - Median";
-                                        tatCategoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} ≤ TAT < ${globalStats.med.toFixed(1)} hari)`;
+                                        tatCategoryDesc = `Termasuk dalam 25-50% (${globalStats.q1.toFixed(1)} â‰¤ TAT < ${globalStats.med.toFixed(1)} days)`;
                                         break;
                                     case 2: 
                                         tatCategory = "Median - Q3";
-                                        tatCategoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} ≤ TAT < ${globalStats.q3.toFixed(1)} hari)`;
+                                        tatCategoryDesc = `Termasuk dalam 50-75% (${globalStats.med.toFixed(1)} â‰¤ TAT < ${globalStats.q3.toFixed(1)} days)`;
                                         break;
                                     case 3: 
                                         tatCategory = "Q3 - Boundary";
-                                        tatCategoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} ≤ TAT ≤ ${boundary.toFixed(1)} hari)`;
+                                        tatCategoryDesc = `Termasuk dalam 75%-Boundary (${globalStats.q3.toFixed(1)} â‰¤ TAT â‰¤ ${boundary.toFixed(1)} days)`;
                                         break;
                                     case 4: 
                                         tatCategory = "Outlier";
-                                        tatCategoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} hari)`;
+                                        tatCategoryDesc = `OUTLIER (TAT > ${boundary.toFixed(1)} days)`;
                                         break;
                                 }
                                 
@@ -2583,10 +2586,10 @@ ${userText}`
                                     `Branch: ${app.branch}`,
                                     `Purpose: ${app.purp}`,
                                     `Limit: ${formatIDR(app.limit)} (${loanSizeCategory})`,
-                                    `TAT: ${app.tat.toFixed(1)} hari`,
-                                    `Kategori TAT: ${tatCategory}`,
+                                    `TAT: ${app.tat.toFixed(1)} days`,
+                                    `TAT Category: ${tatCategory}`,
                                     tatCategoryDesc,
-                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5×${iqr.toFixed(1)} = ${boundary.toFixed(1)} hari`
+                                    `Outlier Boundary: ${globalStats.q3.toFixed(1)} + 1.5Ã—${iqr.toFixed(1)} = ${boundary.toFixed(1)} days`
                                 ];
                             }
                         }
@@ -2659,7 +2662,7 @@ ${userText}`
 
     function createTopBottleneckChart(slowData, totalStatusTatAll) {
         if(charts.cSlow) charts.cSlow.destroy();
-        document.getElementById('tatImpactTotal').textContent = `TAT Impact (Total: ${totalStatusTatAll.toFixed(1)} hari)`;
+        document.getElementById('tatImpactTotal').textContent = `TAT Impact (Total: ${totalStatusTatAll.toFixed(1)} days)`;
 
         charts.cSlow = new Chart(document.getElementById('cSlow'), {
             type: 'bar',
@@ -2727,7 +2730,7 @@ ${userText}`
                                 const item = slowData[ctx[0].dataIndex];
                                 return [
                                     `Cases: ${item.cases.toLocaleString()}`,
-                                    `Total durasi status: ${item.totalTat.toFixed(1)} hari`
+                                    `Total durasi status: ${item.totalTat.toFixed(1)} days`
                                 ];
                             }
                         }
@@ -2867,8 +2870,8 @@ ${userText}`
         const infoEl = document.getElementById('avgStepStatusInfo');
         if (infoEl) {
             infoEl.textContent = rows.length
-                ? `Menampilkan Top ${topRows.length} status dari ${rows.length} status. Rata-rata dihitung per App ID yang memiliki status tersebut.`
-                : 'Belum ada data status.';
+                ? `Showing Top ${topRows.length} status dari ${rows.length} status. Average is calculated per App ID that has that status.`
+                : 'No data yet status.';
         }
         const impactEl = document.getElementById('stepImpactInfo');
         if (impactEl) {
@@ -3007,9 +3010,9 @@ ${userText}`
         const kpiDelayEl = document.getElementById('mgmtKpiDelay');
         if (!tableEl || !summaryEl || !recoEl) return;
         if (!stMetrics || !stMetrics.length) {
-            tableEl.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>`;
+            tableEl.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No data yet</td></tr>`;
             summaryEl.textContent = 'Menunggu data...';
-            recoEl.innerHTML = `<div class="text-muted">Belum ada rekomendasi.</div>`;
+            recoEl.innerHTML = `<div class="text-muted">No recommendations yet.</div>`;
             if (kpiHighEl) kpiHighEl.textContent = '-';
             if (kpiImpactEl) kpiImpactEl.textContent = '-';
             if (kpiDelayEl) kpiDelayEl.textContent = '-';
@@ -3068,11 +3071,11 @@ ${userText}`
                     <div class="impact-track"><div class="impact-bar" style="width:${Math.min(100, r.impactPct)}%"></div></div>
                 </td>
                 <td class="text-end">${r.appCount.toLocaleString()}</td>
-                <td class="text-end">${r.avgTat.toFixed(1)} hari</td>
+                <td class="text-end">${r.avgTat.toFixed(1)} days</td>
                 <td class="text-end">${r.avgStep.toFixed(2)}x</td>
                 <td class="text-center"><span class="badge ${r.priorityClass}">${r.priority}</span></td>
             </tr>
-        `).join('') : `<tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>`;
+        `).join('') : `<tr><td colspan="7" class="text-center text-muted">No data yet</td></tr>`;
 
         const highCount = eligibleRows.filter(r => r.priority === 'High').length;
         const totalApp = e2eData.length || 0;
@@ -3083,7 +3086,7 @@ ${userText}`
         `;
         if (kpiHighEl) kpiHighEl.textContent = highCount.toLocaleString();
         if (kpiImpactEl) kpiImpactEl.textContent = `${top5Impact.toFixed(1)}%`;
-        if (kpiDelayEl) kpiDelayEl.textContent = `${top5Delay.toFixed(1)} hari`;
+        if (kpiDelayEl) kpiDelayEl.textContent = `${top5Delay.toFixed(1)} days`;
 
         const topImpact3 = [...eligibleRows].sort((a, b) => b.impactPct - a.impactPct).slice(0, 3);
         const recos = topImpact3.map((r, idx) => {
@@ -3097,12 +3100,12 @@ ${userText}`
                         <span class="fw-bold">${idx + 1}. ${r.status}</span>
                         <span class="badge ${r.priorityClass}">${r.priority}</span>
                     </div>
-                    <div>Impact ${r.impactPct.toFixed(1)}% | Avg TAT ${r.avgTat.toFixed(1)} hari | Avg Step ${r.avgStep.toFixed(2)}x</div>
+                    <div>Impact ${r.impactPct.toFixed(1)}% | Avg TAT ${r.avgTat.toFixed(1)} days | Avg Step ${r.avgStep.toFixed(2)}x</div>
                     <div class="mt-1">Aksi: <span class="text-primary fw-semibold">${act}</span></div>
                 </div>
             `;
         });
-        recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">Belum ada status dengan impact > 5%.</div>`;
+        recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">No status with impact > 5%.</div>`;
     }
 
     function mkChart(id, type, l, d, lbl, c, ax='x') {
@@ -3145,18 +3148,18 @@ ${userText}`
         
         switch(type) {
             case 'q1':
-                title = "Aplikasi di Quartile 1 (25%)";
-                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vQ1').innerText} hari (Q1)`;
+                title = "Applications in Quartile 1 (25%)";
+                infoText = `Showing ${apps.length} applications with TAT around ${document.getElementById('vQ1').innerText} days (Q1)`;
                 headerColor = "#3b82f6";
                 break;
             case 'median':
-                title = "Aplikasi di Median (50%)";
-                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vMed').innerText} hari (Median)`;
+                title = "Applications at Median (50%)";
+                infoText = `Showing ${apps.length} applications with TAT around ${document.getElementById('vMed').innerText} days (Median)`;
                 headerColor = "#8b5cf6";
                 break;
             case 'q3':
-                title = "Aplikasi di Quartile 3 (75%)";
-                infoText = `Menampilkan ${apps.length} aplikasi dengan TAT sekitar ${document.getElementById('vQ3').innerText} hari (Q3)`;
+                title = "Applications in Quartile 3 (75%)";
+                infoText = `Showing ${apps.length} applications with TAT around ${document.getElementById('vQ3').innerText} days (Q3)`;
                 headerColor = "#f59e0b";
                 break;
         }
@@ -3173,17 +3176,17 @@ ${userText}`
         if(type === 'global') {
             apps = globalOutliers;
             title = "Global Outliers (E2E)";
-            infoText = `Menampilkan ${apps.length} aplikasi outlier (TAT > Q3 + 1.5×IQR = ${globalStats.high.toFixed(1)} hari)`;
+            infoText = `Showing ${apps.length} applications outlier (TAT > Q3 + 1.5Ã—IQR = ${globalStats.high.toFixed(1)} days)`;
         } else if(type === 'status' && status) {
             apps = statusOutliers[status] || [];
             const stats = statusStats[status] || {};
             const boundary = stats.boundary || globalStats.high;
-            title = `Outlier pada Status: ${status}`;
-            infoText = `Menampilkan ${apps.length} aplikasi outlier untuk status "${status}" (TAT > ${boundary.toFixed(1)} hari)`;
+            title = `Outliers in Status: ${status}`;
+            infoText = `Showing ${apps.length} applications outlier for status "${status}" (TAT > ${boundary.toFixed(1)} days)`;
         } else if(type === 'scatter') {
             apps = globalOutliers;
-            title = "Semua Outlier (Scatter Plot)";
-            infoText = `Menampilkan ${apps.length} aplikasi outlier berdasarkan scatter plot`;
+            title = "All Outlier (Scatter Plot)";
+            infoText = `Showing ${apps.length} applications outlier based on scatter plot`;
         }
         
         showDetailModal('outlier', apps, title, headerColor, infoText);
@@ -3200,7 +3203,7 @@ ${userText}`
         const sortedTats = e2eData.map(d => d.tat).sort((a, b) => a - b);
         const percentile = ((sortedTats.indexOf(app.tat) / sortedTats.length) * 100).toFixed(1);
         
-        // PERBAIKAN: Update modal styling berdasarkan status aplikasi (Normal vs Outlier)
+        // PERBAIKAN: Update modal styling berdasarkan status applications (Normal vs Outlier)
         const modalHeader = document.getElementById('singleAppModalHeader');
         const alertBox = document.getElementById('singleAppAlert');
         const infoCard = document.getElementById('singleAppInfoCard');
@@ -3212,7 +3215,7 @@ ${userText}`
         if (isOutlier) {
             // Styling untuk Outlier
             modalHeader.className = 'modal-header bg-danger text-white';
-            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>Detail Aplikasi Outlier`;
+            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>Application Detail Outlier`;
             
             alertBox.className = 'alert alert-warning py-2 mb-3';
             alertBox.querySelector('i').className = 'bi bi-exclamation-triangle me-2';
@@ -3227,12 +3230,12 @@ ${userText}`
             analysisHeader.className = 'card-header bg-info text-white py-2';
             
             showAllBtn.style.display = 'inline-block';
-            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier`;
+            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Show All Outliers`;
             showAllBtn.onclick = function() { showAllOutliersFromSingle(); };
         } else {
             // Styling untuk Normal
             modalHeader.className = 'modal-header bg-primary text-white';
-            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-file-earmark-text me-2"></i>Detail Aplikasi Normal`;
+            modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-file-earmark-text me-2"></i>Application Detail Normal`;
             
             alertBox.className = 'alert alert-info py-2 mb-3';
             alertBox.querySelector('i').className = 'bi bi-info-circle me-2';
@@ -3247,7 +3250,7 @@ ${userText}`
             analysisHeader.className = 'card-header bg-secondary text-white py-2';
             
             showAllBtn.style.display = 'inline-block';
-            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Tampilkan Semua Outlier`;
+            showAllBtn.innerHTML = `<i class="bi bi-list-ul me-1"></i>Show All Outliers`;
             showAllBtn.onclick = function() { showAllOutliersFromSingle(); };
         }
         
@@ -3257,13 +3260,13 @@ ${userText}`
         document.getElementById('singleAppPurpose').textContent = app.purpOriginal || app.purp;
         document.getElementById('singleAppSegment').textContent = app.seg;
         document.getElementById('singleAppMonth').textContent = app.displayMon || formatMonthDisplay(app.mon);
-        document.getElementById('singleAppTat').textContent = `${app.tat.toFixed(1)} hari`;
+        document.getElementById('singleAppTat').textContent = `${app.tat.toFixed(1)} days`;
         
         // Format limit dengan status
         const limitClass = app.limit > 0 ? 'limit-positive' : (app.limit < 0 ? 'limit-negative' : 'limit-zero');
         document.getElementById('singleAppLimit').innerHTML = `<span class="${limitClass}">${formatIDR(app.limit)}</span>`;
         
-        // PERBAIKAN PENTING: Update status berdasarkan apakah aplikasi outlier atau normal
+        // PERBAIKAN PENTING: Update status berdasarkan apakah applications outlier atau normal
         if (isOutlier) {
             document.getElementById('singleAppStatus').innerHTML = `<span class="badge status-outlier">Outlier</span>`;
             document.getElementById('singleAppTat').className = 'app-detail-value fw-bold text-danger';
@@ -3273,16 +3276,16 @@ ${userText}`
         }
         
         document.getElementById('singleAppVsQ3').textContent = isOutlier ? 
-            `${daysAboveQ3.toFixed(1)} hari di atas Q3` : 
-            `${Math.abs(daysAboveQ3).toFixed(1)} hari di bawah Q3`;
+            `${daysAboveQ3.toFixed(1)} days above Q3` : 
+            `${Math.abs(daysAboveQ3).toFixed(1)} days below Q3`;
         
         document.getElementById('singleAppVsOutlierBoundary').textContent = isOutlier ? 
-            `${daysAboveOutlierBoundary.toFixed(1)} hari di atas Boundary` : 
-            `${Math.abs(daysAboveOutlierBoundary).toFixed(1)} hari di bawah Boundary`;
+            `${daysAboveOutlierBoundary.toFixed(1)} days di atas Boundary` : 
+            `${Math.abs(daysAboveOutlierBoundary).toFixed(1)} days di bawah Boundary`;
         
         document.getElementById('singleAppPercentile').textContent = `${percentile}%`;
-        document.getElementById('singleAppDaysAboveQ3').textContent = `${isOutlier ? daysAboveQ3.toFixed(0) : '0'} hari`;
-        document.getElementById('singleAppDaysAboveOutlierBoundary').textContent = `${isOutlier ? daysAboveOutlierBoundary.toFixed(0) : '0'} hari`;
+        document.getElementById('singleAppDaysAboveQ3').textContent = `${isOutlier ? daysAboveQ3.toFixed(0) : '0'} days`;
+        document.getElementById('singleAppDaysAboveOutlierBoundary').textContent = `${isOutlier ? daysAboveOutlierBoundary.toFixed(0) : '0'} days`;
         
         // Tentukan kategori berdasarkan kuartil
         let quartileCategory = "";
@@ -3301,18 +3304,18 @@ ${userText}`
         // Update analysis text dengan info limit dan status yang benar
         let analysisText = '';
         if (isOutlier) {
-            analysisText = `Aplikasi ini termasuk <span class="fw-bold text-danger">OUTLIER</span> (${quartileCategory}) dengan TAT ${app.tat.toFixed(1)} hari (${daysAboveOutlierBoundary.toFixed(1)} hari di atas outlier boundary ${globalStats.high.toFixed(1)} hari)`;
+            analysisText = `This application is <span class="fw-bold text-danger">OUTLIER</span> (${quartileCategory}) with TAT ${app.tat.toFixed(1)} days (${daysAboveOutlierBoundary.toFixed(1)} days above outlier boundary ${globalStats.high.toFixed(1)} days)`;
         } else {
-            analysisText = `Aplikasi ini <span class="fw-bold text-success">NORMAL</span> (${quartileCategory}) dengan TAT ${app.tat.toFixed(1)} hari (${Math.abs(daysAboveOutlierBoundary).toFixed(1)} hari di bawah outlier boundary ${globalStats.high.toFixed(1)} hari)`;
+            analysisText = `This application is <span class="fw-bold text-success">NORMAL</span> (${quartileCategory}) with TAT ${app.tat.toFixed(1)} days (${Math.abs(daysAboveOutlierBoundary).toFixed(1)} days below outlier boundary ${globalStats.high.toFixed(1)} days)`;
         }
         
         // Tambahkan info limit
         if (app.limit > 0) {
-            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="limit-info">(DIHITUNG dalam total portfolio)</span>`;
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="limit-info">(INCLUDED in total portfolio)</span>`;
         } else if (app.limit < 0) {
-            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-danger">(TIDAK dihitung - negatif)</span>`;
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-danger">(EXCLUDED - negative)</span>`;
         } else {
-            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-muted">(TIDAK dihitung - nol)</span>`;
+            analysisText += ` | Limit: ${formatIDR(app.limit)} <span class="text-muted">(EXCLUDED - zero)</span>`;
         }
         
         document.getElementById('singleAppAnalysisText').innerHTML = analysisText;
@@ -3327,12 +3330,12 @@ ${userText}`
                 <tr>
                     <td><span class="repeat-status-chip">${x.status}</span></td>
                     <td class="text-end fw-bold text-warning-emphasis">${x.step}</td>
-                    <td class="text-end fw-bold">${x.tatTotal.toFixed(1)} hari</td>
+                    <td class="text-end fw-bold">${x.tatTotal.toFixed(1)} days</td>
                     <td class="text-center"><span class="badge ${pr.className}">${pr.label}</span></td>
                 </tr>
                 `;
             }).join('')
-            : `<tr><td colspan="4" class="text-center text-muted">Tidak ada pengulangan status</td></tr>`;
+            : `<tr><td colspan="4" class="text-center text-muted">No repeated statuses</td></tr>`;
 
         const flowObj = appFlowEvents[app.id];
         const flowEvents = aggregateFlowEventsByStatusAndCompleteDate(getOrderedFlowEvents(flowObj));
@@ -3345,7 +3348,7 @@ ${userText}`
                         <div class="step-node">${ev.status || 'Unknown'}</div>
                         <div class="step-meta">
                             Complete: ${formatDateDisplay(ev.completeMs)}<br>
-                            TAT (SUM): ${safeNum(ev.duration, 0).toFixed(1)} hari${ev.count > 1 ? `<br><span class="text-muted">Gabung ${ev.count} step</span>` : ''}
+                            TAT (SUM): ${safeNum(ev.duration, 0).toFixed(1)} days${ev.count > 1 ? `<br><span class="text-muted">Gabung ${ev.count} step</span>` : ''}
                         </div>
                     </div>
                 `);
@@ -3365,7 +3368,7 @@ ${userText}`
             });
             document.getElementById('singleAppFlowTimeline').innerHTML = timelineHtml.join('');
         } else {
-            document.getElementById('singleAppFlowTimeline').innerHTML = `<div class="small text-muted">Data flow belum tersedia</div>`;
+            document.getElementById('singleAppFlowTimeline').innerHTML = `<div class="small text-muted">Flow data is not available yet</div>`;
         }
         
         // Update progress bar visualization
@@ -3428,7 +3431,7 @@ ${userText}`
         if (singleModal) {
             singleModal.hide();
             
-            // Tunggu modal benar-benar tertutup sebelum membuka modal outlier
+            // Wait until the modal is fully closed before opening the outlier modal
             const singleModalElement = document.getElementById('singleAppModal');
             singleModalElement.addEventListener('hidden.bs.modal', function onHidden() {
                 singleModalElement.removeEventListener('hidden.bs.modal', onHidden);
@@ -3455,24 +3458,24 @@ ${userText}`
 
     function showTrendDetail() {
         const allTrendApps = Object.values(trendData).flatMap(data => data.apps);
-        showDetailModal('trend', allTrendApps, "Semua Aplikasi (Tren)", "#2563eb", 
-            `Menampilkan semua aplikasi dari data tren. Total: ${allTrendApps.length} aplikasi`);
+        showDetailModal('trend', allTrendApps, "All Applications (Trend)", "#2563eb", 
+            `Showing all applications from trend data. Total: ${allTrendApps.length} applications`);
     }
 
     function showBranchDetail() {
         const allBranchApps = Object.values(branchData).flatMap(data => data.apps);
-        showDetailModal('branch', allBranchApps, "Semua Aplikasi (Cabang)", "#06b6d4", "Menampilkan semua aplikasi berdasarkan cabang");
+        showDetailModal('branch', allBranchApps, "All Applications (Branch)", "#06b6d4", "Showing all applications by branch");
     }
 
     function showTatDistributionDetail() {
         const allDistApps = Object.values(tatDistributionData).flatMap(data => data.apps);
-        showDetailModal('distribution', allDistApps, "Semua Aplikasi (Distribusi TAT)", "#8b5cf6", 
-            `Menampilkan semua aplikasi berdasarkan distribusi TAT. Total: ${allDistApps.length} aplikasi`);
+        showDetailModal('distribution', allDistApps, "All Applications (TAT Distribution)", "#8b5cf6", 
+            `Showing all applications by TAT distribution. Total: ${allDistApps.length} applications`);
     }
 
     function showDetailModal(type, apps, title, headerColor = "#2563eb", infoText = "") {
         if (!apps || apps.length === 0) {
-            alert("Tidak ada data untuk ditampilkan.");
+            alert("No data to display.");
             return;
         }
         
@@ -3487,9 +3490,9 @@ ${userText}`
         modalHeader.querySelector('.modal-title').innerHTML = `<i class="bi bi-list-check me-2"></i>${title}`;
         
         // Update info text
-        document.getElementById('detailInfoText').innerText = infoText || `Menampilkan ${apps.length} aplikasi`;
+        document.getElementById('detailInfoText').innerText = infoText || `Showing ${apps.length} applications`;
         
-        // Calculate summary metrics - PERBAIKAN: Hanya hitung limit dari apps dengan limit > 0
+        // Calculate summary metrics - PERBAIKAN: Hanya hitung limit dari apps with limit > 0
         const totalApps = apps.length;
         const appsWithPositiveLimit = apps.filter(app => app.limit > 0);
         const appsWithZeroOrNegativeLimit = apps.filter(app => app.limit <= 0);
@@ -3502,11 +3505,11 @@ ${userText}`
             <div class="col-md-3">
                 <div class="card border-0 bg-light">
                     <div class="card-body p-3 text-center">
-                        <div class="small text-muted">Total Aplikasi</div>
+                        <div class="small text-muted">Total Applications</div>
                         <div class="h4 fw-bold">${totalApps.toLocaleString()}</div>
                         <div class="small text-muted mt-1">
-                            <span class="limit-info">${appsWithPositiveLimit.length} dengan limit > 0</span><br>
-                            <span class="text-muted">${appsWithZeroOrNegativeLimit.length} tanpa limit</span>
+                            <span class="limit-info">${appsWithPositiveLimit.length} with limit > 0</span><br>
+                            <span class="text-muted">${appsWithZeroOrNegativeLimit.length} without limit</span>
                         </div>
                     </div>
                 </div>
@@ -3515,8 +3518,8 @@ ${userText}`
                 <div class="card border-0 bg-light">
                     <div class="card-body p-3 text-center">
                         <div class="small text-muted">Rata-rata TAT</div>
-                        <div class="h4 fw-bold">${avgTat.toFixed(1)} hari</div>
-                        <div class="small text-muted mt-1">Semua aplikasi</div>
+                        <div class="h4 fw-bold">${avgTat.toFixed(1)} days</div>
+                        <div class="small text-muted mt-1">All applications</div>
                     </div>
                 </div>
             </div>
@@ -3526,7 +3529,7 @@ ${userText}`
                         <div class="small text-muted">Total Limit (>0)</div>
                         <div class="h4 fw-bold">${formatIDR(totalLimit)}</div>
                         <div class="small text-muted mt-1">
-                            <span class="limit-info">Dari ${appsWithPositiveLimit.length} apps</span>
+                            <span class="limit-info">From ${appsWithPositiveLimit.length} apps</span>
                         </div>
                     </div>
                 </div>
@@ -3555,7 +3558,7 @@ ${userText}`
                     <th>Purpose</th>
                     <th>Segment</th>
                     <th>Limit</th>
-                    <th class="text-end">TAT (Hari)</th>
+                    <th class="text-end">TAT (Days)</th>
                     <th class="text-center">Status</th>
                     <th class="text-center">Action</th>
                 </tr>
@@ -3569,7 +3572,7 @@ ${userText}`
                     <th>Purpose</th>
                     <th>Segment</th>
                     <th>Limit</th>
-                    <th class="text-end">TAT (Hari)</th>
+                    <th class="text-end">TAT (Days)</th>
                     <th>Month</th>
                     <th class="text-center">Action</th>
                 </tr>
@@ -3623,7 +3626,7 @@ ${userText}`
             // Action cell with view button
             actionCell = `
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary" onclick="viewSingleAppDetail('${app.id}')" title="Lihat detail">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewSingleAppDetail('${app.id}')" title="View detail">
                         <i class="bi bi-eye"></i>
                     </button>
                 </td>
@@ -3646,11 +3649,11 @@ ${userText}`
         
         // Update footer dengan info limit
         const limitInfo = appsWithPositiveLimit.length > 0 ? 
-            `Total Limit hanya dihitung dari ${appsWithPositiveLimit.length} aplikasi dengan limit > 0.` : 
-            `Tidak ada aplikasi dengan limit > 0 dalam data ini.`;
+            `Total Limit is calculated only from ${appsWithPositiveLimit.length} applications with limit > 0.` : 
+            `No applications with limit > 0 dalam data ini.`;
         
         document.getElementById('detailTableFooter').innerHTML = 
-            `Menampilkan ${apps.length} aplikasi. ${limitInfo} Klik header untuk sort, gunakan search untuk filter, klik ikon mata untuk detail per aplikasi.`;
+            `Showing ${apps.length} applications. ${limitInfo} Click header to sort, use search to filter, click the eye icon for per-application detail.`;
         
         // Show modal
         const modalElement = document.getElementById('detailModal');
@@ -3740,23 +3743,23 @@ ${userText}`
 
     function exportDetailData() {
         if (!currentDetailData || currentDetailData.length === 0) {
-            alert("Tidak ada data untuk diexport.");
+            alert("No data to export.");
             return;
         }
         
-        const headers = ["No", "App ID", "Branch", "Purpose", "Segment", "Limit", "Limit Status", "TAT (Hari)", "Month", "Outlier Status"];
+        const headers = ["No", "App ID", "Branch", "Purpose", "Segment", "Limit", "Limit Status", "TAT (Days)", "Month", "Outlier Status"];
         
         const csvRows = [
             [currentDetailTitle],
-            [`Total Aplikasi: ${currentDetailData.length}`],
-            [`Aplikasi dengan limit > 0: ${currentDetailData.filter(app => app.limit > 0).length}`],
+            [`Total Applications: ${currentDetailData.length}`],
+            [`Applications with limit > 0: ${currentDetailData.filter(app => app.limit > 0).length}`],
             [],
             headers
         ];
         
         currentDetailData.forEach((app, index) => {
             const isOutlier = globalOutliers.some(o => o.id === app.id);
-            const limitStatus = app.limit > 0 ? "Positif (Dihitung)" : 
+            const limitStatus = app.limit > 0 ? "Positive (Included)" : 
                                app.limit < 0 ? "Negatif (Tidak Dihitung)" : 
                                "Nol (Tidak Dihitung)";
             
@@ -3790,7 +3793,7 @@ ${userText}`
     function showBottleneckDetail(status) {
         const statusRows = statusDurationBuckets[status] || [];
         if (!statusRows.length) {
-            alert(`Tidak ada data untuk status "${status}"`);
+            alert(`No data for status "${status}"`);
             return;
         }
 
@@ -3870,7 +3873,7 @@ ${userText}`
         document.getElementById('bottleneckStatusHeader').textContent = status;
 
         document.getElementById('bottleneckSummaryCards').innerHTML = `
-            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Total Case</div><div class="kpi-val">${totalCase.toLocaleString()}</div><div class="kpi-sub">di status ini</div></div></div>
+            <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Total Case</div><div class="kpi-val">${totalCase.toLocaleString()}</div><div class="kpi-sub">in this status</div></div></div>
             <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Case Return</div><div class="kpi-val">${returnCases.toLocaleString()}</div><div class="kpi-sub">mengalami return</div></div></div>
             <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Rework Rate</div><div class="kpi-val">${reworkRate.toFixed(1)}%</div><div class="kpi-sub">return / total</div></div></div>
             <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Avg Loop</div><div class="kpi-val">${avgLoopPerCase.toFixed(1)}</div><div class="kpi-sub">per case return</div></div></div>
@@ -3926,15 +3929,15 @@ ${userText}`
                 <td>${r.label}</td>
                 <td class="text-end">${r.cnt.toLocaleString()}</td>
                 <td class="text-end">${r.avgLoopDist.toFixed(2)}x</td>
-                <td class="text-end">${r.avgTat.toFixed(1)} hari</td>
-                <td class="text-end">${statusBoundary.toFixed(1)} hari</td>
+                <td class="text-end">${r.avgTat.toFixed(1)} days</td>
+                <td class="text-end">${statusBoundary.toFixed(1)} days</td>
                 <td class="text-end">${r.breachCount}/${r.cnt} (${r.breachPct.toFixed(1)}%) ${r.lowSample ? '<span class="badge bg-secondary ms-1">Low Sample</span>' : ''}</td>
                 <td class="text-center"><span class="badge ${r.priorityClass}">${r.priority}</span></td>
             </tr>
-        `).join('') : `<tr><td colspan="7" class="text-center text-muted">Tidak ada data SLA pada status ini</td></tr>`;
+        `).join('') : `<tr><td colspan="7" class="text-center text-muted">No SLA data for this status</td></tr>`;
 
         document.getElementById('slaNoDataInfo').innerHTML = noDataCount > 0
-            ? `Bucket tanpa data disembunyikan: ${noDataCount} bucket.`
+            ? `No-data buckets hidden: ${noDataCount} bucket.`
             : '';
 
         const totalVisibleCases = rowsWithData.reduce((s, r) => s + r.cnt, 0);
@@ -3947,7 +3950,7 @@ ${userText}`
 
         const topBreach = rowsWithData[0];
         const biggestVolume = [...rowsWithData].sort((a, b) => b.cnt - a.cnt)[0];
-        let insight = `Boundary status ${status}: ${statusBoundary.toFixed(1)} hari. `;
+        let insight = `Boundary status ${status}: ${statusBoundary.toFixed(1)} days. `;
         if (topBreach) {
             insight += `Breach tertinggi: ${topBreach.label} (${topBreach.breachCount}/${topBreach.cnt}, ${topBreach.breachPct.toFixed(1)}%). `;
         }
@@ -4019,11 +4022,11 @@ ${userText}`
 
     function exportBottleneckData() {
         if (!currentBottleneckRows.length) {
-            alert('Belum ada data bottleneck yang dipilih.');
+            alert('No data yet bottleneck yang dipilih.');
             return;
         }
 
-        const headers = ['No', 'App ID', 'Branch', 'Purpose', 'Segment', 'Limit', 'TAT Status (Hari)', 'TAT E2E (Hari)'];
+        const headers = ['No', 'App ID', 'Branch', 'Purpose', 'Segment', 'Limit', 'TAT Status (Days)', 'TAT E2E (Days)'];
         const csvRows = [headers];
         currentBottleneckRows.forEach((row, idx) => {
             csvRows.push([
@@ -4050,3 +4053,6 @@ ${userText}`
 </script>
 </body>
 </html>
+
+
+
