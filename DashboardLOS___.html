@@ -536,7 +536,6 @@
             <div class="modal-body">
                 <div class="alert alert-light border mb-3 py-2">
                     <div class="small"><strong>Status:</strong> <span id="bottleneckStatusHeader">-</span></div>
-                    <div class="small"><strong>Period:</strong> <span id="bottleneckPeriodText">-</span></div>
                 </div>
 
                 <h6 class="section-title">1. KPI Ringkasan</h6>
@@ -554,24 +553,10 @@
                     </div>
                     <div class="col-md-6">
                         <div class="chart-card">
-                            <div class="chart-head">2. Loop Frequency Distribution</div>
+                            <div class="chart-head">2. Loop Frequency Distribution by Loan Size</div>
                             <canvas id="bottleneckLoopFreqChart" height="220"></canvas>
                         </div>
                     </div>
-                </div>
-
-                <h6 class="section-title">3. Flow Loop Pattern</h6>
-                <div class="table-responsive mb-3">
-                    <table class="table table-sm table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>From Status</th>
-                                <th>To Status</th>
-                                <th class="text-end">Count</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loopPatternTable"></tbody>
-                    </table>
                 </div>
 
                 <h6 class="section-title">4. Impact to SLA</h6>
@@ -579,28 +564,15 @@
                     <table class="table table-sm table-striped">
                         <thead class="table-light">
                             <tr>
-                                <th>Loop Count</th>
-                                <th class="text-end">Avg TAT</th>
+                                <th>Loan Size</th>
+                                <th class="text-end">Loop Frequency Distribution</th>
+                                <th class="text-end">Outlier Boundary (Status)</th>
                                 <th class="text-end">SLA Breach %</th>
                             </tr>
                         </thead>
                         <tbody id="slaImpactTable"></tbody>
                     </table>
-                    <small class="text-muted">SLA Breach dihitung sebagai TAT E2E > boundary outlier global.</small>
-                </div>
-
-                <h6 class="section-title">5. Top Contributor</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Branch</th>
-                                <th class="text-end">Return Rate</th>
-                                <th class="text-end">Avg Loop</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loopContributorTable"></tbody>
-                    </table>
+                    <small class="text-muted">SLA Breach dihitung sebagai TAT status > outlier boundary status terpilih.</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -2876,20 +2848,9 @@
         });
         const appIds = Object.keys(appMap);
 
-        const periodCount = {};
-        appIds.forEach(id => {
-            const period = appMap[id].app.displayMon || formatMonthDisplay(appMap[id].app.mon) || 'Unknown';
-            periodCount[period] = (periodCount[period] || 0) + 1;
-        });
-        const period = Object.entries(periodCount).sort((a,b) => b[1] - a[1])[0]?.[0] || 'All Period';
-
-        const loopDist = { '1x': 0, '2x': 0, '3x': 0, '>3x': 0 };
-        const transitionMap = {};
-        const branchMap = {};
         const loanBucketStats = {};
-        bottleneckLoanSizeBuckets.forEach(b => { loanBucketStats[b.label] = { sumTat: 0, cnt: 0 }; });
+        bottleneckLoanSizeBuckets.forEach(b => { loanBucketStats[b.label] = { sumTat: 0, cnt: 0, sumLoop: 0, breachCount: 0 }; });
 
-        const loopInfoByApp = {};
         let returnCases = 0;
         let maxLoop = 0;
         let totalLoopForReturnCases = 0;
@@ -2903,57 +2864,43 @@
             const returnCount = Math.max(0, occurrences - 1);
             const isReturn = returnCount > 0;
             const extraTat = hits.slice(1).reduce((sum, e) => sum + safeNum(e.duration, 0), 0);
-            const branchName = appMap[id].app.branch || 'Unknown';
-
-            if (!branchMap[branchName]) {
-                branchMap[branchName] = { total: 0, returnCase: 0, sumLoop: 0, returnLoopCases: 0 };
-            }
-            branchMap[branchName].total++;
             if (isReturn) {
                 returnCases++;
                 totalLoopForReturnCases += occurrences;
                 totalExtraTat += extraTat;
                 maxLoop = Math.max(maxLoop, occurrences);
-                branchMap[branchName].returnCase++;
-                branchMap[branchName].sumLoop += occurrences;
-                branchMap[branchName].returnLoopCases++;
-                if (returnCount === 1) loopDist['1x']++;
-                else if (returnCount === 2) loopDist['2x']++;
-                else if (returnCount === 3) loopDist['3x']++;
-                else loopDist['>3x']++;
             } else {
                 maxLoop = Math.max(maxLoop, occurrences);
             }
-
-            loopInfoByApp[id] = { occurrences, returnCount, isReturn, extraTat };
 
             const limit = safeNum(appMap[id].app.limit, 0);
             if (limit >= 1e9) {
                 const bucketLabel = bucketLabelForBottleneckLoan(limit);
                 loanBucketStats[bucketLabel].sumTat += safeNum(appMap[id].statusTat, 0);
                 loanBucketStats[bucketLabel].cnt++;
+                loanBucketStats[bucketLabel].sumLoop += returnCount;
             }
 
-            if (isReturn) {
-                for (let i = 0; i < events.length - 1; i++) {
-                    const from = events[i].status || 'Unknown';
-                    const to = events[i + 1].status || 'Unknown';
-                    if (from === status || to === status) {
-                        const key = `${from}|||${to}`;
-                        transitionMap[key] = (transitionMap[key] || 0) + 1;
-                    }
-                }
-            }
         });
 
         const totalCase = appIds.length;
         const reworkRate = totalCase > 0 ? (returnCases / totalCase) * 100 : 0;
         const avgLoopPerCase = returnCases > 0 ? totalLoopForReturnCases / returnCases : 1;
         const avgExtraTat = returnCases > 0 ? totalExtraTat / returnCases : 0;
+        const statusBoundary = safeNum((statusStats[status] || {}).boundary, safeNum(globalStats.high, 0));
+
+        appIds.forEach(id => {
+            const limit = safeNum(appMap[id].app.limit, 0);
+            if (limit >= 1e9) {
+                const bucketLabel = bucketLabelForBottleneckLoan(limit);
+                if (safeNum(appMap[id].statusTat, 0) > statusBoundary) {
+                    loanBucketStats[bucketLabel].breachCount++;
+                }
+            }
+        });
 
         document.getElementById('bottleneckStatusName').textContent = status;
         document.getElementById('bottleneckStatusHeader').textContent = status;
-        document.getElementById('bottleneckPeriodText').textContent = period;
 
         document.getElementById('bottleneckSummaryCards').innerHTML = `
             <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Total Case</div><div class="kpi-val">${totalCase.toLocaleString()}</div><div class="kpi-sub">di status ini</div></div></div>
@@ -2964,48 +2911,25 @@
             <div class="col-md-4 col-lg-2"><div class="kpi-card"><div class="kpi-title">Avg Tambahan TAT</div><div class="kpi-val">+${avgExtraTat.toFixed(1)}</div><div class="kpi-sub">hari karena return</div></div></div>
         `;
 
-        const loopPatternRows = Object.entries(transitionMap)
-            .map(([key, count]) => {
-                const [from, to] = key.split('|||');
-                return { from, to, count };
-            })
-            .sort((a,b) => b.count - a.count)
-            .slice(0, 10);
-        document.getElementById('loopPatternTable').innerHTML = loopPatternRows.length ? loopPatternRows.map(r => `
-            <tr><td>${r.from}</td><td>${r.to}</td><td class="text-end">${r.count.toLocaleString()}</td></tr>
-        `).join('') : `<tr><td colspan="3" class="text-center text-muted">Belum ada pola loop/return</td></tr>`;
-
-        const groups = [
-            { label: 'No loop', match: x => x.returnCount === 0 },
-            { label: '1-2 loop', match: x => x.returnCount >= 1 && x.returnCount <= 2 },
-            { label: '>2 loop', match: x => x.returnCount > 2 }
-        ];
-        document.getElementById('slaImpactTable').innerHTML = groups.map(g => {
-            const members = appIds.filter(id => g.match(loopInfoByApp[id]));
-            if (!members.length) {
-                return `<tr><td>${g.label}</td><td class="text-end">-</td><td class="text-end">-</td></tr>`;
-            }
-            const avgTat = members.reduce((sum, id) => sum + safeNum(appMap[id].app.tat, 0), 0) / members.length;
-            const breach = members.filter(id => safeNum(appMap[id].app.tat, 0) > safeNum(globalStats.high, 0)).length;
-            const breachPct = (breach / members.length) * 100;
-            return `<tr><td>${g.label}</td><td class="text-end">${avgTat.toFixed(1)} hari</td><td class="text-end">${breachPct.toFixed(1)}%</td></tr>`;
-        }).join('');
-
-        const contributors = Object.entries(branchMap).map(([branch, d]) => {
-            const returnRate = d.total > 0 ? (d.returnCase / d.total) * 100 : 0;
-            const avgLoop = d.returnLoopCases > 0 ? d.sumLoop / d.returnLoopCases : 0;
-            return { branch, returnRate, avgLoop, total: d.total };
-        }).sort((a,b) => b.returnRate - a.returnRate).slice(0, 10);
-        document.getElementById('loopContributorTable').innerHTML = contributors.length ? contributors.map(x => `
-            <tr><td>${x.branch}</td><td class="text-end">${x.returnRate.toFixed(1)}%</td><td class="text-end">${x.avgLoop.toFixed(1)}</td></tr>
-        `).join('') : `<tr><td colspan="3" class="text-center text-muted">Tidak ada data contributor</td></tr>`;
-
         const loanLabels = bottleneckLoanSizeBuckets.map(b => b.label);
         const avgStatusTatByLoan = loanLabels.map(label => {
             const d = loanBucketStats[label];
             return d.cnt > 0 ? d.sumTat / d.cnt : 0;
         });
-        const caseCountByLoan = loanLabels.map(label => loanBucketStats[label].cnt);
+        const avgLoopByLoan = loanLabels.map(label => {
+            const d = loanBucketStats[label];
+            return d.cnt > 0 ? d.sumLoop / d.cnt : 0;
+        });
+
+        document.getElementById('slaImpactTable').innerHTML = loanLabels.map(label => {
+            const d = loanBucketStats[label];
+            if (d.cnt === 0) {
+                return `<tr><td>${label}</td><td class="text-end">-</td><td class="text-end">${statusBoundary.toFixed(1)} hari</td><td class="text-end">-</td></tr>`;
+            }
+            const breachPct = (d.breachCount / d.cnt) * 100;
+            const avgLoopDist = d.sumLoop / d.cnt;
+            return `<tr><td>${label}</td><td class="text-end">${avgLoopDist.toFixed(2)}x</td><td class="text-end">${statusBoundary.toFixed(1)} hari</td><td class="text-end">${breachPct.toFixed(1)}%</td></tr>`;
+        }).join('');
 
         if (charts.bottleneckLoanSize) charts.bottleneckLoanSize.destroy();
         charts.bottleneckLoanSize = new Chart(document.getElementById('bottleneckLoanSizeChart'), {
@@ -3014,20 +2938,9 @@
                 labels: loanLabels,
                 datasets: [
                     {
-                        type: 'bar',
                         label: 'Avg TAT Status (hari)',
                         data: avgStatusTatByLoan,
                         backgroundColor: '#ef4444'
-                    },
-                    {
-                        type: 'line',
-                        label: '#Case',
-                        data: caseCountByLoan,
-                        borderColor: '#2563eb',
-                        backgroundColor: '#2563eb',
-                        yAxisID: 'y1',
-                        tension: 0.3,
-                        pointRadius: 3
                     }
                 ]
             },
@@ -3038,13 +2951,7 @@
                 interaction: { mode: 'nearest', intersect: true },
                 plugins: { tooltip: { enabled: false } },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'Avg TAT (hari)' } },
-                    y1: {
-                        beginAtZero: true,
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        title: { display: true, text: '#Case' }
-                    }
+                    y: { beginAtZero: true, title: { display: true, text: 'Avg TAT (hari)' } }
                 }
             }
         });
@@ -3053,11 +2960,11 @@
         charts.bottleneckLoopFreq = new Chart(document.getElementById('bottleneckLoopFreqChart'), {
             type: 'bar',
             data: {
-                labels: ['1x', '2x', '3x', '>3x'],
+                labels: loanLabels,
                 datasets: [{
-                    label: '#Case',
-                    data: [loopDist['1x'], loopDist['2x'], loopDist['3x'], loopDist['>3x']],
-                    backgroundColor: ['#0ea5e9', '#2563eb', '#4f46e5', '#7c3aed']
+                    label: 'Avg Loop (x)',
+                    data: avgLoopByLoan,
+                    backgroundColor: '#0ea5e9'
                 }]
             },
             options: {
@@ -3065,7 +2972,7 @@
                 maintainAspectRatio: false,
                 events: ['click'],
                 interaction: { mode: 'nearest', intersect: true },
-                scales: { y: { beginAtZero: true } },
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Avg Loop (x)' } } },
                 plugins: { legend: { display: false }, tooltip: { enabled: false } }
             }
         });
