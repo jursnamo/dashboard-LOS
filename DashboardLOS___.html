@@ -150,6 +150,16 @@
             font-weight: 600;
             display: inline-block;
         }
+        #singleAppRepeatCard {
+            border: 1px solid #fcd34d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #singleAppRepeatCard .card-header {
+            background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+            color: #fff;
+            border-bottom: 0;
+        }
         
         /* Outlier info badge */
         .outlier-info { background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; }
@@ -260,6 +270,64 @@
             max-height: 100px;
             font-size: 0.78rem;
         }
+        .flow-timeline-wrap {
+            overflow-x: auto;
+            padding: 6px 0 2px 0;
+        }
+        .flow-timeline {
+            display: inline-flex;
+            align-items: center;
+            gap: 18px;
+            min-width: 100%;
+            padding: 8px 6px;
+        }
+        .flow-step {
+            position: relative;
+            min-width: 120px;
+            text-align: center;
+        }
+        .flow-step .step-index {
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            margin: 0 auto 8px auto;
+            display: grid;
+            place-items: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #fff;
+            background: #2563eb;
+        }
+        .flow-step .step-node {
+            border-radius: 999px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 8px 10px;
+            min-height: 44px;
+            display: grid;
+            place-items: center;
+        }
+        .flow-step .step-meta {
+            margin-top: 6px;
+            font-size: 0.66rem;
+            color: #64748b;
+            line-height: 1.3;
+        }
+        .flow-step::after {
+            content: "";
+            position: absolute;
+            right: -14px;
+            top: 49px;
+            width: 10px;
+            height: 2px;
+            background: #93c5fd;
+        }
+        .flow-step:last-child::after {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -330,6 +398,8 @@
                     <hr class="my-2">
                     <label class="small text-muted fw-bold">Booking Month (Untuk Grafik Tren)</label>
                     <select id="mMonth" class="form-select col-sel form-select-sm"></select>
+                    <label class="small text-muted fw-bold mt-2">Complete Date (Untuk timeline detail outlier)</label>
+                    <select id="mComplete" class="form-select col-sel form-select-sm"></select>
                 </div>
             </div>
 
@@ -492,7 +562,7 @@
 
 <!-- Unified Modal for All Details -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 86vw; width: 86vw;">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header" id="detailModalHeader">
                 <h5 class="modal-title" id="detailModalLabel"><i class="bi bi-list-check me-2"></i>Detail Aplikasi</h5>
@@ -535,7 +605,7 @@
 
 <!-- Single Application Detail Modal -->
 <div class="modal fade" id="singleAppModal" tabindex="-1" aria-labelledby="singleAppModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 88vw; width: 88vw;">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header" id="singleAppModalHeader">
                 <h5 class="modal-title" id="singleAppModalLabel"><i class="bi bi-file-earmark-text me-2"></i>Detail Aplikasi</h5>
@@ -644,26 +714,40 @@
                 </div>
 
                 <div class="card mt-3" id="singleAppRepeatCard">
+                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                        <div class="fw-bold">
+                            <i class="bi bi-arrow-repeat me-1"></i>Total TAT per Status
+                        </div>
+                        <span class="repeat-badge" id="singleAppRepeatTotal">Total Return: 0x</span>
+                    </div>
                     <div class="card-body">
-                        <div class="repeat-box">
-                            <div class="repeat-head">
-                                <div class="repeat-title">
-                                    <i class="bi bi-arrow-repeat me-1"></i>Pengulangan per Status
-                                </div>
-                                <span class="repeat-badge" id="singleAppRepeatTotal">Total Return: 0x</span>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped mb-0 repeat-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Status</th>
-                                            <th class="text-end">Total Pengulangan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="singleAppRepeatTable">
-                                        <tr><td colspan="2" class="text-center text-muted">-</td></tr>
-                                    </tbody>
-                                </table>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 repeat-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Status</th>
+                                        <th class="text-end">Total Step</th>
+                                        <th class="text-end">TAT (TOTAL)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="singleAppRepeatTable">
+                                    <tr><td colspan="3" class="text-center text-muted">-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3" id="singleAppFlowCard">
+                    <div class="card-header py-2 bg-light d-flex justify-content-between align-items-center">
+                        <div class="fw-bold text-secondary">
+                            <i class="bi bi-diagram-3 me-1"></i>Flow Step (sorted by Complete Date)
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="flow-timeline-wrap">
+                            <div class="flow-timeline" id="singleAppFlowTimeline">
+                                <div class="small text-muted">Data flow belum tersedia</div>
                             </div>
                         </div>
                     </div>
@@ -679,7 +763,7 @@
 </div>
 <!-- Tambahkan di akhir file sebelum </body> -->
 <div class="modal fade" id="bottleneckDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 96vw; width: 96vw;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 88vw; width: 88vw;">
         <div class="modal-content">
             <div class="modal-header bg-warning text-white">
                 <h5 class="modal-title" id="bottleneckModalLabel">
@@ -1061,6 +1145,7 @@ ${userText}`
         auto('mMonth', ['booking month', 'month']);
         auto('mStart', ['create_date', 'start']);
         auto('mEnd', ['completed_date', 'end']);
+        auto('mComplete', ['completed_date', 'complete date', 'end']);
         auto('mTat', ['tat', 'sla']);
         auto('mStat', ['status_flow', 'flow']);
 
@@ -1102,6 +1187,7 @@ ${userText}`
             limit: document.getElementById('mLimit').value,
             branch: document.getElementById('mBranch').value,
             mon: document.getElementById('mMonth').value,
+            c: document.getElementById('mComplete').value,
             s: document.getElementById('mStart').value,
             e: document.getElementById('mEnd').value,
             t: document.getElementById('mTat').value,
@@ -1190,6 +1276,7 @@ ${userText}`
             let dur = 0;
             let startDate = new Date(NaN);
             let endDate = new Date(NaN);
+            const completeDate = parseDateRobust(row[m.c] || row[m.e]);
             if(mode === 'date') {
                 // PERBAIKAN: Parsing tanggal start dan end juga dengan cara yang sama
                 startDate = parseDateRobust(row[m.s]);
@@ -1224,6 +1311,7 @@ ${userText}`
                 duration: dur,
                 startMs: !isNaN(startDate.getTime()) ? startDate.getTime() : null,
                 endMs: !isNaN(endDate.getTime()) ? endDate.getTime() : null,
+                completeMs: !isNaN(completeDate.getTime()) ? completeDate.getTime() : null,
                 seq: flowRowIndex
             });
 
@@ -2508,14 +2596,35 @@ ${userText}`
             return [];
         }
         const counts = {};
+        const tatTotals = {};
         flow.events.forEach(ev => {
             const st = String(ev.status || 'Unknown').trim() || 'Unknown';
             counts[st] = (counts[st] || 0) + 1;
+            tatTotals[st] = (tatTotals[st] || 0) + safeNum(ev.duration, 0);
         });
         return Object.entries(counts)
-            .map(([status, cnt]) => ({ status, repeat: Math.max(0, cnt - 1) }))
+            .map(([status, cnt]) => ({
+                status,
+                step: cnt,
+                repeat: Math.max(0, cnt - 1),
+                tatTotal: tatTotals[status] || 0
+            }))
             .filter(x => x.repeat > 0)
-            .sort((a, b) => b.repeat - a.repeat);
+            .sort((a, b) => b.step - a.step || b.tatTotal - a.tatTotal);
+    }
+
+    function formatDateDisplay(dateMs) {
+        if (!dateMs) return '-';
+        try {
+            const d = new Date(dateMs);
+            if (isNaN(d.getTime())) return '-';
+            const dd = String(d.getUTCDate()).padStart(2, '0');
+            const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const yyyy = d.getUTCFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        } catch (_) {
+            return '-';
+        }
     }
 
     function mkChart(id, type, l, d, lbl, c, ax='x') {
@@ -2734,8 +2843,34 @@ ${userText}`
         const totalReturn = repeatRows.reduce((sum, x) => sum + x.repeat, 0);
         document.getElementById('singleAppRepeatTotal').textContent = `Total Return: ${totalReturn}x`;
         document.getElementById('singleAppRepeatTable').innerHTML = repeatRows.length
-            ? repeatRows.map(x => `<tr><td><span class="repeat-status-chip">${x.status}</span></td><td class="text-end fw-bold text-warning-emphasis">${x.repeat}</td></tr>`).join('')
-            : `<tr><td colspan="2" class="text-center text-muted">Tidak ada pengulangan status</td></tr>`;
+            ? repeatRows.map(x => `
+                <tr>
+                    <td><span class="repeat-status-chip">${x.status}</span></td>
+                    <td class="text-end fw-bold text-warning-emphasis">${x.step}</td>
+                    <td class="text-end fw-bold">${x.tatTotal.toFixed(1)} hari</td>
+                </tr>
+            `).join('')
+            : `<tr><td colspan="3" class="text-center text-muted">Tidak ada pengulangan status</td></tr>`;
+
+        const flowObj = appFlowEvents[app.id];
+        const flowEvents = getOrderedFlowEvents(flowObj).slice().sort((a, b) => {
+            if (a.completeMs !== null && b.completeMs !== null) return a.completeMs - b.completeMs;
+            if (a.completeMs !== null) return -1;
+            if (b.completeMs !== null) return 1;
+            return a.seq - b.seq;
+        });
+        document.getElementById('singleAppFlowTimeline').innerHTML = flowEvents.length
+            ? flowEvents.map((ev, idx) => `
+                <div class="flow-step">
+                    <div class="step-index">${idx + 1}</div>
+                    <div class="step-node">${ev.status || 'Unknown'}</div>
+                    <div class="step-meta">
+                        Complete: ${formatDateDisplay(ev.completeMs)}<br>
+                        TAT: ${safeNum(ev.duration, 0).toFixed(1)} hari
+                    </div>
+                </div>
+            `).join('')
+            : `<div class="small text-muted">Data flow belum tersedia</div>`;
         
         // Update progress bar visualization
         const normalWidth = 75;
