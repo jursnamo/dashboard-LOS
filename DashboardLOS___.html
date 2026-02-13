@@ -378,6 +378,58 @@
         .flow-gap.danger .gap-days {
             color: #b91c1c;
         }
+        .mgmt-kpi {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        }
+        .mgmt-kpi .k {
+            font-size: 0.68rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .mgmt-kpi .v {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .impact-cell {
+            min-width: 130px;
+        }
+        .impact-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .impact-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #f59e0b 0%, #ef4444 100%);
+        }
+        .playbook-item {
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+        .playbook-item.high {
+            border-color: #fecaca;
+            background: #fff1f2;
+        }
+        .playbook-item.medium {
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+        .playbook-item.low {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+        }
     </style>
 </head>
 <body>
@@ -561,7 +613,7 @@
             </div>
         </div>
         
-        <h6 class="section-title">3. PROCESS HEALTH CHECK</h6>
+        <h6 class="section-title">5. LEAD TIME (HARI)</h6>
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="chart-card border-danger">
@@ -582,6 +634,53 @@
                     <div class="small text-muted mt-2" id="avgStepStatusInfo"></div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <h6 class="section-title mt-1">4. MANAGEMENT ACTION BOARD</h6>
+                <div class="row g-3 mb-1">
+                    <div class="col-md-8">
+                        <div class="chart-card border-danger">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4"><div class="mgmt-kpi"><div class="k">High Priority</div><div class="v" id="mgmtKpiHigh">-</div></div></div>
+                                <div class="col-md-4"><div class="mgmt-kpi"><div class="k">Impact Captured</div><div class="v" id="mgmtKpiImpact">-</div></div></div>
+                                <div class="col-md-4"><div class="mgmt-kpi"><div class="k">Avg Delay Top5</div><div class="v" id="mgmtKpiDelay">-</div></div></div>
+                            </div>
+                            <div class="chart-head text-danger d-flex justify-content-between">
+                                <span><i class="bi bi-exclamation-diamond me-2"></i>Top 5 Priority Status</span>
+                                <span class="small text-muted">Urut berdasarkan impact + delay + loop</span>
+                            </div>
+                            <div class="table-responsive" style="max-height:260px;">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Impact %</th>
+                                            <th class="text-end">#App</th>
+                                            <th class="text-end">Avg TAT</th>
+                                            <th class="text-end">Avg Step</th>
+                                            <th class="text-center">Priority</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mgmtActionTable">
+                                        <tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="chart-card border-primary">
+                            <div class="chart-head text-primary">
+                                <span><i class="bi bi-lightning-charge me-2"></i>Decision Playbook</span>
+                            </div>
+                            <div class="small text-muted mb-2" id="mgmtActionSummary">Menunggu data...</div>
+                            <div id="mgmtActionReco" class="small">
+                                <div class="text-muted">Belum ada rekomendasi.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="chart-card">
                     <div class="chart-head">Distribusi TAT (6 Kategori) <span class="small text-primary">Klik batang untuk detail per bucket</span></div>
@@ -600,7 +699,7 @@
             </div>
         </div>
 
-        <h6 class="section-title">4. BUSINESS GROWTH & DISTRIBUTION</h6>
+        <h6 class="section-title">6. BUSINESS GROWTH & DISTRIBUTION</h6>
         <div class="row g-4 mb-3">
             <div class="col-md-6">
                 <div class="chart-card chart-clickable" onclick="showTrendDetail()">
@@ -2026,6 +2125,7 @@ ${userText}`
         }));
         createTopBottleneckChart(slow, totalStatusTatAll);
         renderAvgStepPerStatusChart();
+        renderManagementActionBoard(stMetrics);
 
         // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps dengan limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
@@ -2863,10 +2963,10 @@ ${userText}`
             .map(([status, cnt]) => ({
                 status,
                 step: cnt,
-                repeat: Math.max(0, cnt - 1),
+                repeat: cnt,
                 tatTotal: tatTotals[status] || 0
             }))
-            .filter(x => x.repeat > 0)
+            .filter(x => x.step > 0)
             .sort((a, b) => b.step - a.step || b.tatTotal - a.tatTotal);
     }
 
@@ -2896,6 +2996,114 @@ ${userText}`
         const diff = (toMs - fromMs) / 86400000;
         if (!Number.isFinite(diff) || diff < 0) return 0;
         return Math.round(diff);
+    }
+
+    function renderManagementActionBoard(stMetrics) {
+        const tableEl = document.getElementById('mgmtActionTable');
+        const summaryEl = document.getElementById('mgmtActionSummary');
+        const recoEl = document.getElementById('mgmtActionReco');
+        const kpiHighEl = document.getElementById('mgmtKpiHigh');
+        const kpiImpactEl = document.getElementById('mgmtKpiImpact');
+        const kpiDelayEl = document.getElementById('mgmtKpiDelay');
+        if (!tableEl || !summaryEl || !recoEl) return;
+        if (!stMetrics || !stMetrics.length) {
+            tableEl.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>`;
+            summaryEl.textContent = 'Menunggu data...';
+            recoEl.innerHTML = `<div class="text-muted">Belum ada rekomendasi.</div>`;
+            if (kpiHighEl) kpiHighEl.textContent = '-';
+            if (kpiImpactEl) kpiImpactEl.textContent = '-';
+            if (kpiDelayEl) kpiDelayEl.textContent = '-';
+            return;
+        }
+
+        const totalTat = stMetrics.reduce((sum, x) => sum + safeNum(x.totalTat, 0), 0);
+        const stepAgg = {};
+        Object.values(appFlowEvents).forEach(flow => {
+            const perStatus = {};
+            (flow.events || []).forEach(ev => {
+                const st = String(ev.status || 'Unknown').trim() || 'Unknown';
+                perStatus[st] = (perStatus[st] || 0) + 1;
+            });
+            Object.entries(perStatus).forEach(([st, cnt]) => {
+                if (!stepAgg[st]) stepAgg[st] = { totalStep: 0, appCount: 0 };
+                stepAgg[st].totalStep += cnt;
+                stepAgg[st].appCount += 1;
+            });
+        });
+
+        const rows = stMetrics.map(x => {
+            const s = stepAgg[x.stat] || { totalStep: 0, appCount: 0 };
+            const avgStep = s.appCount > 0 ? s.totalStep / s.appCount : 0;
+            const impactPct = totalTat > 0 ? (safeNum(x.totalTat, 0) / totalTat) * 100 : 0;
+            const delayScore = globalStats.high > 0 ? (safeNum(x.avg, 0) / globalStats.high) * 100 : 0;
+            const loopScore = avgStep * 20;
+            const score = impactPct * 0.6 + delayScore * 0.25 + loopScore * 0.15;
+            let priority = 'Low';
+            let priorityClass = 'bg-success';
+            if (impactPct >= 12 || avgStep >= 2 || x.avg >= globalStats.q3) {
+                priority = 'High';
+                priorityClass = 'bg-danger';
+            } else if (impactPct >= 6 || avgStep >= 1.4) {
+                priority = 'Medium';
+                priorityClass = 'bg-warning text-dark';
+            }
+            return {
+                status: x.stat,
+                impactPct,
+                appCount: safeNum(x.cases, 0),
+                avgTat: safeNum(x.avg, 0),
+                avgStep,
+                score,
+                priority,
+                priorityClass
+            };
+        }).sort((a, b) => b.score - a.score);
+
+        const top5 = rows.slice(0, 5);
+        const top5Impact = top5.reduce((sum, r) => sum + r.impactPct, 0);
+        const top5Delay = top5.length ? top5.reduce((sum, r) => sum + r.avgTat, 0) / top5.length : 0;
+        tableEl.innerHTML = top5.length ? top5.map((r, i) => `
+            <tr class="${r.priority === 'High' ? 'table-danger' : (r.priority === 'Medium' ? 'table-warning' : '')}">
+                <td>${i + 1}</td>
+                <td class="fw-bold">${r.status}</td>
+                <td class="text-end impact-cell">
+                    <div>${r.impactPct.toFixed(1)}%</div>
+                    <div class="impact-track"><div class="impact-bar" style="width:${Math.min(100, r.impactPct)}%"></div></div>
+                </td>
+                <td class="text-end">${r.appCount.toLocaleString()}</td>
+                <td class="text-end">${r.avgTat.toFixed(1)} hari</td>
+                <td class="text-end">${r.avgStep.toFixed(2)}x</td>
+                <td class="text-center"><span class="badge ${r.priorityClass}">${r.priority}</span></td>
+            </tr>
+        `).join('') : `<tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>`;
+
+        const highCount = rows.filter(r => r.priority === 'High').length;
+        const totalApp = e2eData.length || 0;
+        summaryEl.innerHTML = `
+            <span class="badge bg-danger me-1">High: ${highCount}</span>
+            <span class="badge bg-secondary">Total App: ${totalApp.toLocaleString()}</span>
+        `;
+        if (kpiHighEl) kpiHighEl.textContent = highCount.toLocaleString();
+        if (kpiImpactEl) kpiImpactEl.textContent = `${top5Impact.toFixed(1)}%`;
+        if (kpiDelayEl) kpiDelayEl.textContent = `${top5Delay.toFixed(1)} hari`;
+
+        const recos = top5.slice(0, 3).map((r, idx) => {
+            const act = r.avgStep >= 2
+                ? 'perbaiki loop approval dan return handling'
+                : (r.avgTat > globalStats.q3 ? 'percepat SLA internal dan escalation' : 'monitor mingguan');
+            const tone = r.priority === 'High' ? 'high' : (r.priority === 'Medium' ? 'medium' : 'low');
+            return `
+                <div class="playbook-item ${tone}">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold">${idx + 1}. ${r.status}</span>
+                        <span class="badge ${r.priorityClass}">${r.priority}</span>
+                    </div>
+                    <div>Impact ${r.impactPct.toFixed(1)}% | Avg TAT ${r.avgTat.toFixed(1)} hari | Avg Step ${r.avgStep.toFixed(2)}x</div>
+                    <div class="mt-1">Aksi: <span class="text-primary fw-semibold">${act}</span></div>
+                </div>
+            `;
+        });
+        recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">Belum ada rekomendasi.</div>`;
     }
 
     function mkChart(id, type, l, d, lbl, c, ax='x') {
@@ -3111,8 +3319,8 @@ ${userText}`
         document.getElementById('singleAppAnalysisText').innerHTML = analysisText;
         document.getElementById('singleAppInfoText').innerHTML = analysisText;
         const repeatRows = getRepeatStatusSummary(app.id);
-        const totalReturn = repeatRows.reduce((sum, x) => sum + x.repeat, 0);
-        document.getElementById('singleAppRepeatTotal').textContent = `Total Return: ${totalReturn}x`;
+        const totalReturn = repeatRows.reduce((sum, x) => sum + x.step, 0);
+        document.getElementById('singleAppRepeatTotal').textContent = `Total Step: ${totalReturn}x`;
         document.getElementById('singleAppRepeatTable').innerHTML = repeatRows.length
             ? repeatRows.map(x => {
                 const pr = getStepPriority(x.tatTotal);
