@@ -3040,10 +3040,10 @@ ${userText}`
             const score = impactPct * 0.6 + delayScore * 0.25 + loopScore * 0.15;
             let priority = 'Low';
             let priorityClass = 'bg-success';
-            if (impactPct >= 12 || avgStep >= 2 || x.avg >= globalStats.q3) {
+            if (impactPct > 8) {
                 priority = 'High';
                 priorityClass = 'bg-danger';
-            } else if (impactPct >= 6 || avgStep >= 1.4) {
+            } else if (impactPct > 5) {
                 priority = 'Medium';
                 priorityClass = 'bg-warning text-dark';
             }
@@ -3059,7 +3059,8 @@ ${userText}`
             };
         }).sort((a, b) => b.score - a.score);
 
-        const top5 = rows.slice(0, 5);
+        const eligibleRows = rows.filter(r => r.impactPct > 5);
+        const top5 = eligibleRows.slice(0, 5);
         const top5Impact = top5.reduce((sum, r) => sum + r.impactPct, 0);
         const top5Delay = top5.length ? top5.reduce((sum, r) => sum + r.avgTat, 0) / top5.length : 0;
         tableEl.innerHTML = top5.length ? top5.map((r, i) => `
@@ -3077,17 +3078,19 @@ ${userText}`
             </tr>
         `).join('') : `<tr><td colspan="7" class="text-center text-muted">Belum ada data</td></tr>`;
 
-        const highCount = rows.filter(r => r.priority === 'High').length;
+        const highCount = eligibleRows.filter(r => r.priority === 'High').length;
         const totalApp = e2eData.length || 0;
         summaryEl.innerHTML = `
             <span class="badge bg-danger me-1">High: ${highCount}</span>
+            <span class="badge bg-primary me-1">Impact >5%: ${eligibleRows.length}</span>
             <span class="badge bg-secondary">Total App: ${totalApp.toLocaleString()}</span>
         `;
         if (kpiHighEl) kpiHighEl.textContent = highCount.toLocaleString();
         if (kpiImpactEl) kpiImpactEl.textContent = `${top5Impact.toFixed(1)}%`;
         if (kpiDelayEl) kpiDelayEl.textContent = `${top5Delay.toFixed(1)} hari`;
 
-        const recos = top5.slice(0, 3).map((r, idx) => {
+        const topImpact3 = [...eligibleRows].sort((a, b) => b.impactPct - a.impactPct).slice(0, 3);
+        const recos = topImpact3.map((r, idx) => {
             const act = r.avgStep >= 2
                 ? 'perbaiki loop approval dan return handling'
                 : (r.avgTat > globalStats.q3 ? 'percepat SLA internal dan escalation' : 'monitor mingguan');
@@ -3103,7 +3106,7 @@ ${userText}`
                 </div>
             `;
         });
-        recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">Belum ada rekomendasi.</div>`;
+        recoEl.innerHTML = recos.length ? recos.join('') : `<div class="text-muted">Belum ada status dengan impact > 5%.</div>`;
     }
 
     function mkChart(id, type, l, d, lbl, c, ax='x') {
