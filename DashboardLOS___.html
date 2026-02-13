@@ -648,6 +648,29 @@
                 </div>
 
                 <h6 class="section-title">4. Impact to SLA</h6>
+                <div class="row g-2 mb-2" id="slaQuickCards">
+                    <div class="col-md-4">
+                        <div class="kpi-card py-2">
+                            <div class="kpi-title">Overall Breach</div>
+                            <div class="kpi-val" id="slaOverallBreach">-</div>
+                            <div class="kpi-sub">across visible buckets</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="kpi-card py-2">
+                            <div class="kpi-title">High Priority Buckets</div>
+                            <div class="kpi-val" id="slaHighPriority">-</div>
+                            <div class="kpi-sub">need immediate action</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="kpi-card py-2">
+                            <div class="kpi-title">No Data Buckets</div>
+                            <div class="kpi-val" id="slaNoDataCount">-</div>
+                            <div class="kpi-sub">hidden from table</div>
+                        </div>
+                    </div>
+                </div>
                 <div class="alert alert-info py-2 mb-2 small" id="slaInsightText">
                     Insight SLA akan muncul setelah status dipilih.
                 </div>
@@ -3079,7 +3102,7 @@
         });
 
         document.getElementById('slaImpactTable').innerHTML = rowsWithData.length ? rowsWithData.map(r => `
-            <tr>
+            <tr class="${r.priority === 'High' ? 'table-danger' : (r.priority === 'Medium' ? 'table-warning' : '')}">
                 <td>${r.label}</td>
                 <td class="text-end">${r.cnt.toLocaleString()}</td>
                 <td class="text-end">${r.avgLoopDist.toFixed(2)}x</td>
@@ -3093,6 +3116,14 @@
         document.getElementById('slaNoDataInfo').innerHTML = noDataCount > 0
             ? `Bucket tanpa data disembunyikan: ${noDataCount} bucket.`
             : '';
+
+        const totalVisibleCases = rowsWithData.reduce((s, r) => s + r.cnt, 0);
+        const totalVisibleBreach = rowsWithData.reduce((s, r) => s + r.breachCount, 0);
+        const overallBreachPct = totalVisibleCases > 0 ? (totalVisibleBreach / totalVisibleCases) * 100 : 0;
+        const highPriorityCount = rowsWithData.filter(r => r.priority === 'High').length;
+        document.getElementById('slaOverallBreach').textContent = `${totalVisibleBreach}/${totalVisibleCases} (${overallBreachPct.toFixed(1)}%)`;
+        document.getElementById('slaHighPriority').textContent = highPriorityCount.toLocaleString();
+        document.getElementById('slaNoDataCount').textContent = noDataCount.toLocaleString();
 
         const topBreach = rowsWithData[0];
         const biggestVolume = [...rowsWithData].sort((a, b) => b.cnt - a.cnt)[0];
