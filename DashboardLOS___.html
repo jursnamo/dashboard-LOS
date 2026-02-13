@@ -517,6 +517,19 @@
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showOutliersModal('global')" style="border-left-color:#ef4444; background:#fef2f2"><div class="kpi-title text-danger">Total Outliers</div><div class="kpi-val text-danger" id="vOut">-</div><div class="kpi-sub">Click for details</div></div></div>
         </div>
 
+        <div class="row g-3 mt-1 mb-4">
+            <div class="col-md-12">
+                <div class="chart-card border-primary">
+                    <div class="chart-head text-primary d-flex justify-content-between">
+                        <span><i class="bi bi-bar-chart-steps me-2"></i>Avg Step per Status (Group by App ID)</span>
+                        <span class="small text-muted">Avg Step = total step status per app / jumlah app yang punya status</span>
+                    </div>
+                    <div style="height: 240px;"><canvas id="cAvgStepStatus"></canvas></div>
+                    <div class="small text-muted mt-2" id="avgStepStatusInfo"></div>
+                </div>
+            </div>
+        </div>
+
         <h6 class="section-title">2. EXCEPTION MANAGEMENT (OUTLIER ANALYSIS)</h6>
         <div class="row g-4 mb-4">
             <div class="col-md-12">
@@ -2014,6 +2027,7 @@ ${userText}`
             impactPct: totalStatusTatAll > 0 ? (item.totalTat / totalStatusTatAll) * 100 : 0
         }));
         createTopBottleneckChart(slow, totalStatusTatAll);
+        renderAvgStepPerStatusChart();
 
         // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps dengan limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
@@ -2723,6 +2737,82 @@ ${userText}`
     function safeNum(value, fallback = 0) {
         const n = Number(value);
         return Number.isFinite(n) ? n : fallback;
+    }
+
+    function renderAvgStepPerStatusChart() {
+        const statAgg = {};
+        Object.values(appFlowEvents).forEach(flow => {
+            const cntByStatus = {};
+            (flow.events || []).forEach(ev => {
+                const st = String(ev.status || 'Unknown').trim() || 'Unknown';
+                cntByStatus[st] = (cntByStatus[st] || 0) + 1;
+            });
+            Object.keys(cntByStatus).forEach(st => {
+                if (!statAgg[st]) statAgg[st] = { totalStep: 0, appCount: 0 };
+                statAgg[st].totalStep += cntByStatus[st];
+                statAgg[st].appCount += 1;
+            });
+        });
+
+        const rows = Object.keys(statAgg).map(st => {
+            const item = statAgg[st];
+            const avgStep = item.appCount > 0 ? item.totalStep / item.appCount : 0;
+            return { status: st, avgStep, totalStep: item.totalStep, appCount: item.appCount };
+        }).sort((a, b) => b.avgStep - a.avgStep);
+
+        const topRows = rows.slice(0, 12);
+        const infoEl = document.getElementById('avgStepStatusInfo');
+        if (infoEl) {
+            infoEl.textContent = rows.length
+                ? `Menampilkan Top ${topRows.length} status dari ${rows.length} status. Rata-rata dihitung per App ID yang memiliki status tersebut.`
+                : 'Belum ada data status.';
+        }
+
+        const canvas = document.getElementById('cAvgStepStatus');
+        if (!canvas) return;
+        if (charts.cAvgStepStatus) charts.cAvgStepStatus.destroy();
+        if (!topRows.length) return;
+
+        charts.cAvgStepStatus = new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: topRows.map(x => x.status),
+                datasets: [{
+                    label: 'Avg Step / App ID',
+                    data: topRows.map(x => Number(x.avgStep.toFixed(2))),
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6,
+                    maxBarThickness: 36
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Avg Step' }
+                    },
+                    x: {
+                        ticks: { maxRotation: 35, minRotation: 0 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            afterBody: function(ctx) {
+                                const row = topRows[ctx[0].dataIndex];
+                                return [
+                                    `Total Step: ${row.totalStep.toLocaleString()}`,
+                                    `Jumlah App ID: ${row.appCount.toLocaleString()}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     function getRepeatStatusSummary(appId) {
