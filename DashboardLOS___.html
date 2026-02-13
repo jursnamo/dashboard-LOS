@@ -566,6 +566,67 @@
             text-align: center;
             padding: 4px 0;
         }
+        .sim-reset-btn {
+            border: 1px solid #cbd5e1;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            color: #334155;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+            transition: all 0.18s ease;
+        }
+        .sim-reset-btn:hover {
+            border-color: #94a3b8;
+            color: #0f172a;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+            background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
+        }
+        .sim-reset-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+        }
+        .sim-reset-btn i {
+            transition: transform 0.25s ease;
+        }
+        .sim-reset-btn:hover i {
+            transform: rotate(-20deg);
+        }
+        .sim-insight-badge {
+            display: inline-block;
+            margin: 0 4px 4px 0;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #7f1d1d;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+        }
+        .sim-insight-more {
+            display: inline-block;
+            margin: 0 4px 4px 0;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: #334155;
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+        }
+        .sim-insight-metric {
+            display: inline-block;
+            margin: 0 4px 4px 0;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #065f46;
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
+        }
         @media (max-width: 768px) {
             .sim-row {
                 grid-template-columns: 1fr;
@@ -871,7 +932,12 @@
                 <div class="chart-card border-secondary" id="actionSimCard">
                     <div class="chart-head text-dark d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-sliders me-2"></i>Simulator Dampak Aksi (What-if)</span>
-                        <span class="small text-muted">Simulasi gabungan pengurangan loop semua status</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small text-muted">Simulasi gabungan pengurangan loop semua status</span>
+                            <button class="sim-reset-btn" onclick="resetActionSimulator()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Simulator
+                            </button>
+                        </div>
                     </div>
                     <div class="row g-3 mb-2">
                         <div class="col-md-12">
@@ -3039,6 +3105,15 @@ ${userText}`
         return Number.isFinite(n) ? n : fallback;
     }
 
+    function escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function renderAvgStepPerStatusChart() {
         const statAgg = {};
         Object.values(appFlowEvents).forEach(flow => {
@@ -3463,14 +3538,22 @@ ${userText}`
         if (id('simBreachProj')) id('simBreachProj').textContent = breachProj.toLocaleString();
         if (id('simInsight')) {
             const breachDrop = breachBase - breachProj;
+            const metricSaved = `<span class="sim-insight-metric">${tatSaved.toFixed(1)} hari</span>`;
+            const metricDelta = `<span class="sim-insight-metric">${portfolioDelta.toFixed(2)} hari/app</span>`;
+            const metricBreach = `<span class="sim-insight-metric">${breachDrop.toLocaleString()} case</span>`;
             const reduced = simulatedStatuses
                 .filter(s => safeNum(simReductionByStatus[s], 0) > 0)
-                .map(s => `${s}:${safeNum(simReductionByStatus[s], 0)}%`);
-            const topPreview = reduced.slice(0, 3).join(', ');
-            const suffix = reduced.length > 3 ? ` +${reduced.length - 3} status lain` : '';
-            const targetText = reduced.length ? `Status diturunkan [${topPreview}${suffix}]` : 'Belum ada status yang diturunkan (>0%)';
-            id('simInsight').textContent =
-                `${targetText}: pengurangan loop gabungan berpotensi menghemat ${tatSaved.toFixed(1)} hari, menurunkan avg portfolio ${portfolioDelta.toFixed(2)} hari/app, dan mengurangi breach ${breachDrop.toLocaleString()} case.`;
+                .map(s => ({ status: s, pct: safeNum(simReductionByStatus[s], 0) }));
+            if (!reduced.length) {
+                id('simInsight').innerHTML =
+                    `Belum ada status yang diturunkan (>0%): pengurangan loop gabungan berpotensi menghemat ${metricSaved}, menurunkan avg portfolio ${metricDelta}, dan mengurangi breach ${metricBreach}.`;
+            } else {
+                const allBadges = reduced.map(x =>
+                    `<span class="sim-insight-badge">${escapeHtml(x.status)}:${x.pct}%</span>`
+                ).join('');
+                id('simInsight').innerHTML =
+                    `Status diturunkan ${allBadges}: pengurangan loop gabungan berpotensi menghemat ${metricSaved}, menurunkan avg portfolio ${metricDelta}, dan mengurangi breach ${metricBreach}.`;
+            }
         }
 
         renderActionSimChart(currentPortfolioAvg, projectedPortfolioAvg, breachBase, breachProj);
@@ -3478,6 +3561,21 @@ ${userText}`
 
     function updateActionSimulator() {
         ensureSimStatusControls(simStatusOrder || []);
+        recalcActionSimulator();
+    }
+
+    function resetActionSimulator() {
+        const statusList = (simStatusOrder || []).filter(Boolean);
+        if (!statusList.length) return;
+        statusList.forEach(status => {
+            simReductionByStatus[status] = 0;
+        });
+        document.querySelectorAll('#simStatusControls input[data-status]').forEach(input => {
+            input.value = 0;
+            const row = input.closest('.sim-row');
+            const pct = row ? row.querySelector('.sim-pct') : null;
+            if (pct) pct.textContent = '0%';
+        });
         recalcActionSimulator();
     }
 
