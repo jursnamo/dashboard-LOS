@@ -82,6 +82,19 @@
             -webkit-user-select: none;
             -webkit-user-drag: none;
         }
+        #bottleneckDetailModal .modal-content {
+            max-height: 92vh;
+            overflow: hidden;
+        }
+        #bottleneckDetailModal .modal-body {
+            overflow-y: auto;
+        }
+        #bottleneckDetailModal .chart-card {
+            height: auto;
+        }
+        .bottleneck-mini-chart {
+            height: 180px;
+        }
         
         /* Single App Modal */
         .app-detail-row { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
@@ -619,30 +632,41 @@
                     <div class="col-md-6">
                         <div class="chart-card">
                             <div class="chart-head">TAT vs Loan Size per Status</div>
-                            <canvas id="bottleneckLoanSizeChart" height="220"></canvas>
+                            <div class="bottleneck-mini-chart">
+                                <canvas id="bottleneckLoanSizeChart"></canvas>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="chart-card">
                             <div class="chart-head">2. Loop Frequency Distribution by Loan Size</div>
-                            <canvas id="bottleneckLoopFreqChart" height="220"></canvas>
+                            <div class="bottleneck-mini-chart">
+                                <canvas id="bottleneckLoopFreqChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <h6 class="section-title">4. Impact to SLA</h6>
+                <div class="alert alert-info py-2 mb-2 small" id="slaInsightText">
+                    Insight SLA akan muncul setelah status dipilih.
+                </div>
                 <div class="table-responsive mb-3">
                     <table class="table table-sm table-striped">
                         <thead class="table-light">
                             <tr>
                                 <th>Loan Size</th>
+                                <th class="text-end">Total Aplikasi</th>
                                 <th class="text-end">Loop Frequency Distribution</th>
+                                <th class="text-end">Avg TAT</th>
                                 <th class="text-end">Outlier Boundary (Status)</th>
-                                <th class="text-end">SLA Breach %</th>
+                                <th class="text-end">SLA Breach</th>
+                                <th class="text-center">Priority</th>
                             </tr>
                         </thead>
                         <tbody id="slaImpactTable"></tbody>
                     </table>
+                    <div class="small text-muted" id="slaNoDataInfo"></div>
                     <small class="text-muted">SLA Breach dihitung sebagai TAT status > outlier boundary status terpilih.</small>
                 </div>
             </div>
@@ -3021,15 +3045,65 @@
             return d.cnt > 0 ? d.sumLoop / d.cnt : 0;
         });
 
-        document.getElementById('slaImpactTable').innerHTML = loanLabels.map(label => {
+        const tatWithData = avgStatusTatByLoan.filter(v => v > 0);
+        const minTat = tatWithData.length ? Math.min(...tatWithData) : 0;
+        const maxTat = tatWithData.length ? Math.max(...tatWithData) : 10;
+        const yMinTat = Math.max(0, Math.floor(minTat - 1));
+        const yMaxTat = Math.ceil(maxTat + 1);
+
+        const slaRows = loanLabels.map(label => {
             const d = loanBucketStats[label];
-            if (d.cnt === 0) {
-                return `<tr><td>${label}</td><td class="text-end">-</td><td class="text-end">${statusBoundary.toFixed(1)} hari</td><td class="text-end">-</td></tr>`;
+            const breachPct = d.cnt > 0 ? (d.breachCount / d.cnt) * 100 : 0;
+            const avgLoopDist = d.cnt > 0 ? d.sumLoop / d.cnt : 0;
+            const avgTat = d.cnt > 0 ? d.sumTat / d.cnt : 0;
+            let priority = 'Low';
+            let priorityClass = 'bg-success';
+            if (d.cnt >= 30 && breachPct >= 5) {
+                priority = 'High';
+                priorityClass = 'bg-danger';
+            } else if (d.cnt >= 30 && breachPct >= 2) {
+                priority = 'Medium';
+                priorityClass = 'bg-warning text-dark';
             }
-            const breachPct = (d.breachCount / d.cnt) * 100;
-            const avgLoopDist = d.sumLoop / d.cnt;
-            return `<tr><td>${label}</td><td class="text-end">${avgLoopDist.toFixed(2)}x</td><td class="text-end">${statusBoundary.toFixed(1)} hari</td><td class="text-end">${breachPct.toFixed(1)}%</td></tr>`;
-        }).join('');
+            const lowSample = d.cnt > 0 && d.cnt < 10;
+            return { label, cnt: d.cnt, breachCount: d.breachCount, breachPct, avgLoopDist, avgTat, priority, priorityClass, lowSample };
+        });
+
+        const rowsWithData = slaRows.filter(r => r.cnt > 0);
+        const noDataCount = slaRows.length - rowsWithData.length;
+        const priorityRank = { High: 0, Medium: 1, Low: 2 };
+        rowsWithData.sort((a, b) => {
+            const pr = (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9);
+            if (pr !== 0) return pr;
+            return b.breachPct - a.breachPct;
+        });
+
+        document.getElementById('slaImpactTable').innerHTML = rowsWithData.length ? rowsWithData.map(r => `
+            <tr>
+                <td>${r.label}</td>
+                <td class="text-end">${r.cnt.toLocaleString()}</td>
+                <td class="text-end">${r.avgLoopDist.toFixed(2)}x</td>
+                <td class="text-end">${r.avgTat.toFixed(1)} hari</td>
+                <td class="text-end">${statusBoundary.toFixed(1)} hari</td>
+                <td class="text-end">${r.breachCount}/${r.cnt} (${r.breachPct.toFixed(1)}%) ${r.lowSample ? '<span class="badge bg-secondary ms-1">Low Sample</span>' : ''}</td>
+                <td class="text-center"><span class="badge ${r.priorityClass}">${r.priority}</span></td>
+            </tr>
+        `).join('') : `<tr><td colspan="7" class="text-center text-muted">Tidak ada data SLA pada status ini</td></tr>`;
+
+        document.getElementById('slaNoDataInfo').innerHTML = noDataCount > 0
+            ? `Bucket tanpa data disembunyikan: ${noDataCount} bucket.`
+            : '';
+
+        const topBreach = rowsWithData[0];
+        const biggestVolume = [...rowsWithData].sort((a, b) => b.cnt - a.cnt)[0];
+        let insight = `Boundary status ${status}: ${statusBoundary.toFixed(1)} hari. `;
+        if (topBreach) {
+            insight += `Breach tertinggi: ${topBreach.label} (${topBreach.breachCount}/${topBreach.cnt}, ${topBreach.breachPct.toFixed(1)}%). `;
+        }
+        if (biggestVolume) {
+            insight += `Volume terbesar: ${biggestVolume.label} (n=${biggestVolume.cnt}, breach ${biggestVolume.breachPct.toFixed(1)}%).`;
+        }
+        document.getElementById('slaInsightText').textContent = insight;
 
         if (charts.bottleneckLoanSize) charts.bottleneckLoanSize.destroy();
         charts.bottleneckLoanSize = new Chart(document.getElementById('bottleneckLoanSizeChart'), {
@@ -3051,7 +3125,12 @@
                 interaction: { mode: 'nearest', intersect: true },
                 plugins: { tooltip: { enabled: false } },
                 scales: {
-                    y: { beginAtZero: true, title: { display: true, text: 'Avg TAT (hari)' } }
+                    y: {
+                        beginAtZero: false,
+                        min: yMinTat,
+                        max: yMaxTat,
+                        title: { display: true, text: 'Avg TAT (hari)' }
+                    }
                 }
             }
         });
