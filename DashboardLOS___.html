@@ -646,7 +646,7 @@
                             </div>
                             <div class="chart-head text-danger d-flex justify-content-between">
                                 <span><i class="bi bi-exclamation-diamond me-2"></i>Top 5 Priority Status</span>
-                                <span class="small text-muted">Urut berdasarkan impact + delay + loop</span>
+                                <span class="small text-muted">Urut berdasarkan Impact % tertinggi</span>
                             </div>
                             <div class="table-responsive" style="max-height:260px;">
                                 <table class="table table-sm table-striped mb-0">
@@ -3035,9 +3035,6 @@ ${userText}`
             const s = stepAgg[x.stat] || { totalStep: 0, appCount: 0 };
             const avgStep = s.appCount > 0 ? s.totalStep / s.appCount : 0;
             const impactPct = totalTat > 0 ? (safeNum(x.totalTat, 0) / totalTat) * 100 : 0;
-            const delayScore = globalStats.high > 0 ? (safeNum(x.avg, 0) / globalStats.high) * 100 : 0;
-            const loopScore = avgStep * 20;
-            const score = impactPct * 0.6 + delayScore * 0.25 + loopScore * 0.15;
             let priority = 'Low';
             let priorityClass = 'bg-success';
             if (impactPct > 8) {
@@ -3053,11 +3050,10 @@ ${userText}`
                 appCount: safeNum(x.cases, 0),
                 avgTat: safeNum(x.avg, 0),
                 avgStep,
-                score,
                 priority,
                 priorityClass
             };
-        }).sort((a, b) => b.score - a.score);
+        }).sort((a, b) => b.impactPct - a.impactPct);
 
         const eligibleRows = rows.filter(r => r.impactPct > 5);
         const top5 = eligibleRows.slice(0, 5);
