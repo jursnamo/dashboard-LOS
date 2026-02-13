@@ -517,19 +517,6 @@
             <div class="col-md-2"><div class="kpi-card kpi-clickable" onclick="showOutliersModal('global')" style="border-left-color:#ef4444; background:#fef2f2"><div class="kpi-title text-danger">Total Outliers</div><div class="kpi-val text-danger" id="vOut">-</div><div class="kpi-sub">Click for details</div></div></div>
         </div>
 
-        <div class="row g-3 mt-1 mb-4">
-            <div class="col-md-12">
-                <div class="chart-card border-primary">
-                    <div class="chart-head text-primary d-flex justify-content-between">
-                        <span><i class="bi bi-bar-chart-steps me-2"></i>Avg Step per Status (Group by App ID)</span>
-                        <span class="small text-muted">Avg Step = total step status per app / jumlah app yang punya status</span>
-                    </div>
-                    <div style="height: 240px;"><canvas id="cAvgStepStatus"></canvas></div>
-                    <div class="small text-muted mt-2" id="avgStepStatusInfo"></div>
-                </div>
-            </div>
-        </div>
-
         <h6 class="section-title">2. EXCEPTION MANAGEMENT (OUTLIER ANALYSIS)</h6>
         <div class="row g-4 mb-4">
             <div class="col-md-12">
@@ -591,11 +578,21 @@
                     <div style="height: 280px;"><canvas id="cPurp"></canvas></div>
                 </div>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="chart-card">
                     <div class="chart-head">Distribusi TAT (6 Kategori) <span class="small text-primary">Klik batang untuk detail per bucket</span></div>
                     <div style="height: 250px;"><canvas id="cDist"></canvas></div>
                     <div id="distChartInfo" class="small text-muted mt-2"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card border-primary">
+                    <div class="chart-head text-primary d-flex justify-content-between">
+                        <span><i class="bi bi-bar-chart-steps me-2"></i>Avg Step per Status (Group by App ID)</span>
+                        <span class="small text-muted">Group by App ID</span>
+                    </div>
+                    <div style="height: 250px;"><canvas id="cAvgStepStatus"></canvas></div>
+                    <div class="small text-muted mt-2" id="avgStepStatusInfo"></div>
                 </div>
             </div>
             <div class="mt-2 d-flex justify-content-between align-items-center">
