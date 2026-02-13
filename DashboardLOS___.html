@@ -328,6 +328,22 @@
         .flow-step:last-child::after {
             display: none;
         }
+        .flow-step.high-tat .step-index {
+            background: #dc2626;
+        }
+        .flow-step.high-tat .step-node {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+        }
+        .flow-step.high-tat .step-meta {
+            color: #991b1b;
+            font-weight: 600;
+        }
+        .flow-step.high-tat::after {
+            background: #ef4444;
+        }
     </style>
 </head>
 <body>
@@ -1312,6 +1328,7 @@ ${userText}`
                 startMs: !isNaN(startDate.getTime()) ? startDate.getTime() : null,
                 endMs: !isNaN(endDate.getTime()) ? endDate.getTime() : null,
                 completeMs: !isNaN(completeDate.getTime()) ? completeDate.getTime() : null,
+                completeKey: makeDateKey(completeDate),
                 seq: flowRowIndex
             });
 
@@ -1432,7 +1449,7 @@ ${userText}`
         if (!dateValue) return new Date(NaN);
         
         if (dateValue instanceof Date) {
-            return dateValue;
+            return new Date(dateValue.getFullYear(), dateValue.getMonth(), dateValue.getDate());
         }
         
         if (typeof dateValue === 'string') {
@@ -1466,12 +1483,20 @@ ${userText}`
             // Coba parsing dengan Date biasa
             const parsed = new Date(dateStr);
             if (!isNaN(parsed.getTime())) {
-                return parsed;
+                return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
             }
         }
         
         // Jika semua gagal, return tanggal invalid
         return new Date(NaN);
+    }
+
+    function makeDateKey(dateObj) {
+        if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) return null;
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
     }
 
     function prepareChartData(e2eData, globalStats) {
@@ -2584,21 +2609,7 @@ ${userText}`
         const grouped = {};
         events.forEach(ev => {
             const status = String(ev.status || 'Unknown').trim() || 'Unknown';
-            const hasComplete = Number.isFinite(ev.completeMs);
-            if (!hasComplete) {
-                order.push({
-                    status,
-                    completeMs: null,
-                    duration: safeNum(ev.duration, 0),
-                    count: 1,
-                    seq: ev.seq
-                });
-                return;
-            }
-            const d = new Date(ev.completeMs);
-            const dateKey = isNaN(d.getTime())
-                ? null
-                : `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+            const dateKey = (ev.completeKey && String(ev.completeKey).trim()) || null;
             if (!dateKey) {
                 order.push({
                     status,
@@ -2614,6 +2625,7 @@ ${userText}`
                 grouped[key] = {
                     status,
                     completeMs: ev.completeMs,
+                    completeKey: dateKey,
                     duration: 0,
                     count: 0,
                     seq: ev.seq
@@ -2623,7 +2635,9 @@ ${userText}`
             grouped[key].duration += safeNum(ev.duration, 0);
             grouped[key].count += 1;
             if (ev.seq < grouped[key].seq) grouped[key].seq = ev.seq;
-            if (ev.completeMs < grouped[key].completeMs) grouped[key].completeMs = ev.completeMs;
+            if (Number.isFinite(ev.completeMs) && (!Number.isFinite(grouped[key].completeMs) || ev.completeMs < grouped[key].completeMs)) {
+                grouped[key].completeMs = ev.completeMs;
+            }
         });
         return order.sort((a, b) => {
             if (a.completeMs !== null && b.completeMs !== null) return a.completeMs - b.completeMs;
@@ -2673,9 +2687,9 @@ ${userText}`
         try {
             const d = new Date(dateMs);
             if (isNaN(d.getTime())) return '-';
-            const dd = String(d.getUTCDate()).padStart(2, '0');
-            const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-            const yyyy = d.getUTCFullYear();
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
             return `${dd}/${mm}/${yyyy}`;
         } catch (_) {
             return '-';
@@ -2911,7 +2925,7 @@ ${userText}`
         const flowEvents = aggregateFlowEventsByStatusAndCompleteDate(getOrderedFlowEvents(flowObj));
         document.getElementById('singleAppFlowTimeline').innerHTML = flowEvents.length
             ? flowEvents.map((ev, idx) => `
-                <div class="flow-step">
+                <div class="flow-step ${safeNum(ev.duration, 0) > 5 ? 'high-tat' : ''}">
                     <div class="step-index">${idx + 1}</div>
                     <div class="step-node">${ev.status || 'Unknown'}</div>
                     <div class="step-meta">
