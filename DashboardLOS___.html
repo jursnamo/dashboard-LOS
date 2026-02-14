@@ -270,6 +270,89 @@
             max-height: 100px;
             font-size: 0.78rem;
         }
+        .sim-fab {
+            position: fixed;
+            right: 20px;
+            bottom: 72px;
+            z-index: 1190;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 14px;
+            background: #b91c1c;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 8px 18px rgba(185, 28, 28, 0.3);
+        }
+        .sim-float-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 124px;
+            width: 620px;
+            max-width: calc(100vw - 24px);
+            height: 520px;
+            max-height: calc(100vh - 140px);
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            z-index: 1190;
+            display: none;
+            overflow: hidden;
+            box-shadow: 0 16px 30px rgba(2, 6, 23, 0.22);
+        }
+        .sim-float-panel.show {
+            display: flex;
+            flex-direction: column;
+        }
+        .sim-float-head {
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .sim-float-body {
+            flex: 1;
+            overflow: auto;
+            padding: 10px;
+            background: #f8fafc;
+        }
+        .sim-float-foot {
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .sim-foot-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .sim-slot {
+            font-size: 0.72rem;
+            min-width: 74px;
+        }
+        body.present-mode {
+            background: #ffffff;
+        }
+        body.present-mode .main-wrap {
+            max-width: 100vw;
+            margin: 0;
+            border-radius: 0;
+            min-height: 100vh;
+            box-shadow: none;
+        }
+        body.present-mode #aiChatFab,
+        body.present-mode #aiChatPanel {
+            display: none !important;
+        }
         .flow-timeline-wrap {
             overflow-x: auto;
             padding: 6px 0 2px 0;
@@ -646,7 +729,15 @@
             <h4 class="mb-0 fw-bold"><i class="bi bi-layers-fill me-2"></i>Executive LOS Dashboard</h4>
             <small class="opacity-75">Strategic Insights & Performance Monitoring</small>
         </div>
-        <button class="btn btn-outline-light btn-sm" onclick="location.reload()">Reset Analysis</button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-light btn-sm" id="presentModeBtn" onclick="togglePresentMode()">
+                <i class="bi bi-easel me-1"></i>Present Mode
+            </button>
+            <button class="btn btn-outline-light btn-sm" onclick="exportSimulationReport()">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Export Compare
+            </button>
+            <button class="btn btn-outline-light btn-sm" onclick="location.reload()">Reset Analysis</button>
+        </div>
     </div>
 
     <div id="step1" class="step active">
@@ -933,7 +1024,7 @@
                     <div class="chart-head text-dark d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-sliders me-2"></i>Simulator Dampak Aksi (What-if)</span>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="small text-muted">Simulasi gabungan pengurangan loop semua status</span>
+                            <span class="small text-muted">Atur reduction di sini atau lewat Quick Sim (floating).</span>
                             <button class="sim-reset-btn" onclick="resetActionSimulator()">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Simulator
                             </button>
@@ -970,7 +1061,7 @@
                                         <div class="value text-primary" id="simBreachProj">-</div>
                                     </div>
                                 </div>
-                                <div class="small text-muted mt-2" id="simInsight">Pilih satu atau lebih status untuk melihat simulasi.</div>
+                                <div class="small text-muted mt-2" id="simInsight">Atur status dari Quick Sim untuk melihat pergerakan dampak.</div>
                             </div>
                         </div>
                         <div class="col-md-7">
@@ -980,6 +1071,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -1260,7 +1352,7 @@
                                 <th class="text-end">Total Applications</th>
                                 <th class="text-end">Loop Frequency Distribution</th>
                                 <th class="text-end">Avg TAT</th>
-                                <th class="text-end">Outlier Boundary (Status)</th>
+                                <th class="text-end">Avg TAT (Status)</th>
                                 <th class="text-end">SLA Breach</th>
                                 <th class="text-center">Priority</th>
                             </tr>
@@ -1268,11 +1360,11 @@
                         <tbody id="slaImpactTable"></tbody>
                     </table>
                     <div class="small text-muted" id="slaNoDataInfo"></div>
-                    <small class="text-muted">SLA Breach is calculated as status TAT > selected status outlier boundary.</small>
+                    <small class="text-muted">SLA Breach is calculated as status TAT > selected status Avg TAT.</small>
                     <div class="small mt-2 text-secondary" id="slaPriorityInfo">
                         Rule Priority:
-                        <span class="badge bg-danger ms-1">High</span> if n >= 30 and breach >= 5%,
-                        <span class="badge bg-warning text-dark ms-1">Medium</span> if n >= 30 and breach >= 2%,
+                        <span class="badge bg-danger ms-1">High</span> if n >= 30 and breach >= 15%,
+                        <span class="badge bg-warning text-dark ms-1">Medium</span> if n >= 30 and breach >= 8%,
                         <span class="badge bg-success ms-1">Low</span> otherwise.
                         Breach% = breachCount / total applications bucket x 100.
                     </div>
@@ -1290,6 +1382,10 @@
     <i class="bi bi-robot me-1"></i>AI Chat
 </button>
 
+<button class="sim-fab" id="simFab" onclick="toggleSimFloat()">
+    <i class="bi bi-sliders me-1"></i>Quick Sim
+</button>
+
 <div class="ai-chat-panel" id="aiChatPanel">
     <div class="ai-chat-head">
         <span><i class="bi bi-stars me-1"></i>Gemini Assistant</span>
@@ -1301,6 +1397,34 @@
     <div class="ai-chat-foot">
         <textarea id="aiChatInput" class="form-control form-control-sm" placeholder="Tulis pertanyaan..."></textarea>
         <button class="btn btn-primary btn-sm" id="aiChatSendBtn" onclick="sendAIChat()">Kirim</button>
+    </div>
+</div>
+
+<div class="sim-float-panel" id="simFloatPanel">
+    <div class="sim-float-head">
+        <span><i class="bi bi-sliders me-1"></i>Quick Action Simulator</span>
+        <button class="btn btn-sm btn-outline-light py-0 px-2" onclick="toggleSimFloat()">x</button>
+    </div>
+    <div class="sim-float-body">
+        <div class="small text-muted mb-2">Atur reduction status di sini. Dashboard akan bergerak real-time.</div>
+        <div id="simStatusControlsFloating" class="sim-status-board">
+            <div class="small text-muted p-2">Status belum tersedia.</div>
+        </div>
+    </div>
+    <div class="sim-float-foot">
+        <small class="text-muted">Tip: cocok untuk presentasi direksi tanpa scroll.</small>
+        <div class="sim-foot-actions">
+            <select id="simScenarioSlot" class="form-select form-select-sm sim-slot">
+                <option value="A">Scenario A</option>
+                <option value="B">Scenario B</option>
+                <option value="C">Scenario C</option>
+            </select>
+            <button class="sim-reset-btn" onclick="saveScenarioSlot()"><i class="bi bi-save me-1"></i>Save</button>
+            <button class="sim-reset-btn" onclick="loadScenarioSlot()"><i class="bi bi-folder2-open me-1"></i>Load</button>
+            <button class="sim-reset-btn" onclick="resetActionSimulator()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+        </div>
     </div>
 </div>
 <script>
@@ -1320,6 +1444,12 @@
     let simReductionByStatus = {};
     let simStatusOrder = [];
     let simImpactByStatus = {};
+    let baseE2EData = [];
+    let baseStatusAgg = {};
+    let baseAppsById = {};
+    let baseGlobalStats = {};
+    let baseAppFlowEvents = {};
+    let simLastSnapshot = null;
     const GEMINI_API_KEY = ''; // Isi sendiri secret key Gemini Anda
     const GEMINI_MODEL = 'gemini-2.0-flash';
     
@@ -1414,6 +1544,28 @@
 
     function toggleAIChat() {
         document.getElementById('aiChatPanel').classList.toggle('show');
+    }
+
+    function toggleSimFloat() {
+        const panel = document.getElementById('simFloatPanel');
+        if (panel) panel.classList.toggle('show');
+    }
+
+    async function togglePresentMode() {
+        const inMode = document.body.classList.toggle('present-mode');
+        const btn = document.getElementById('presentModeBtn');
+        if (btn) {
+            btn.innerHTML = inMode
+                ? '<i class="bi bi-easel2-fill me-1"></i>Exit Present'
+                : '<i class="bi bi-easel me-1"></i>Present Mode';
+        }
+        try {
+            if (inMode && !document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+            } else if (!inMode && document.fullscreenElement) {
+                await document.exitFullscreen();
+            }
+        } catch (_) {}
     }
 
     function appendAIMessage(text, cls) {
@@ -1768,6 +1920,14 @@ ${userText}`
 
         // Sort by TAT for quartile calculations
         e2eData.sort((a, b) => a.tat - b.tat);
+
+        baseE2EData = e2eData.map(x => ({ ...x }));
+        baseStatusAgg = { ...statusAgg };
+        baseAppsById = {};
+        Object.keys(apps).forEach(id => {
+            baseAppsById[id] = { ...apps[id] };
+        });
+        baseAppFlowEvents = cloneFlowEventMap(appFlowEvents);
         
         // Filter applications dengan limit positif (> 0) untuk perhitungan limit
         appsWithPositiveLimit = e2eData.filter(app => app.limit > 0);
@@ -1778,6 +1938,7 @@ ${userText}`
         const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
         const uniqueMonths = [...new Set(e2eData.map(d=>d.mon))].filter(x=>x!=='Unknown').length || 1;
         globalStats = calcStats(e2eData.map(d=>d.tat));
+        baseGlobalStats = { ...globalStats };
         globalOutliers = e2eData.filter(d => d.tat > globalStats.high);
         
         console.log("Total e2eData:", e2eData.length);
@@ -1996,7 +2157,7 @@ ${userText}`
         });
     }
 
-    function createCharts(e2eData, globalStats, statusAgg, apps) {
+    function createCharts(e2eData, globalStats, statusAgg, apps, skipSimInit = false) {
         // Sort months for trend chart
         const sortedMonthKeys = Object.keys(trendData)
             .filter(key => key !== 'Unknown')
@@ -2393,7 +2554,9 @@ ${userText}`
         createTopBottleneckChart(slow, totalStatusTatAll);
         renderAvgStepPerStatusChart();
         renderManagementActionBoard(stMetrics);
-        initActionSimulator(stMetrics);
+        if (!skipSimInit) {
+            initActionSimulator(stMetrics);
+        }
 
         // Purpose Chart - PERBAIKAN: Hitung average TAT hanya dari apps with limit > 0, GUNAKAN PURPOSE NORMALIZED
         const prp={}; const prpC={}; const prpPositiveCount={};
@@ -3105,6 +3268,21 @@ ${userText}`
         return Number.isFinite(n) ? n : fallback;
     }
 
+    function cloneFlowEventMap(source) {
+        const out = {};
+        Object.keys(source || {}).forEach(id => {
+            const flow = source[id] || {};
+            out[id] = {
+                id: flow.id,
+                branch: flow.branch,
+                mon: flow.mon,
+                displayMon: flow.displayMon,
+                events: (flow.events || []).map(ev => ({ ...ev }))
+            };
+        });
+        return out;
+    }
+
     function escapeHtml(text) {
         return String(text || '')
             .replace(/&/g, '&amp;')
@@ -3404,28 +3582,22 @@ ${userText}`
     function getStatusSimulationBase(status) {
         const boundary = safeNum((statusStats[status] || {}).high, globalStats.high);
         let appCount = 0;
-        let appsWithRepeat = 0;
         let baselineTat = 0;
-        let repeatTat = 0;
         let breachBase = 0;
         const perApp = [];
 
-        Object.values(appFlowEvents).forEach(flow => {
+        Object.values(baseAppFlowEvents || {}).forEach(flow => {
             const hits = getOrderedFlowEvents(flow).filter(ev => String(ev.status || '').trim() === status);
             if (!hits.length) return;
             const durations = hits.map(ev => safeNum(ev.duration, 0));
-            const firstTat = safeNum(durations[0], 0);
-            const extraTat = durations.slice(1).reduce((s, n) => s + safeNum(n, 0), 0);
-            const totalTat = firstTat + extraTat;
+            const totalTat = durations.reduce((s, n) => s + safeNum(n, 0), 0);
             appCount++;
-            if (hits.length > 1) appsWithRepeat++;
             baselineTat += totalTat;
-            repeatTat += extraTat;
             if (totalTat > boundary) breachBase++;
-            perApp.push({ firstTat, extraTat, totalTat });
+            perApp.push({ totalTat });
         });
 
-        return { status, boundary, appCount, appsWithRepeat, baselineTat, repeatTat, breachBase, perApp };
+        return { status, boundary, appCount, baselineTat, breachBase, perApp };
     }
 
     function renderActionSimChart(baseAvg, projAvg, breachBase, breachProj) {
@@ -3458,8 +3630,7 @@ ${userText}`
         });
     }
 
-    function ensureSimStatusControls(statusList) {
-        const container = document.getElementById('simStatusControls');
+    function renderSimStatusControlsInto(container, statusList) {
         if (!container) return;
         const key = statusList.join('||');
         if (container.dataset.key === key) return;
@@ -3486,13 +3657,21 @@ ${userText}`
         }).join('');
     }
 
+    function ensureSimStatusControls(statusList) {
+        renderSimStatusControlsInto(document.getElementById('simStatusControls'), statusList);
+        renderSimStatusControlsInto(document.getElementById('simStatusControlsFloating'), statusList);
+    }
+
     function onSimStatusReductionInput(el) {
         const status = el.getAttribute('data-status') || '';
         const val = safeNum(el.value, 0);
         if (status) simReductionByStatus[status] = val;
-        const row = el.closest('.sim-row');
-        const pct = row ? row.querySelector('.sim-pct') : null;
-        if (pct) pct.textContent = `${val}%`;
+        document.querySelectorAll(`#simStatusControls input[data-status="${status}"], #simStatusControlsFloating input[data-status="${status}"]`).forEach(input => {
+            input.value = val;
+            const row = input.closest('.sim-row');
+            const pct = row ? row.querySelector('.sim-pct') : null;
+            if (pct) pct.textContent = `${val}%`;
+        });
         recalcActionSimulator();
     }
 
@@ -3513,20 +3692,20 @@ ${userText}`
             const base = getStatusSimulationBase(status);
             const reductionPct = safeNum(simReductionByStatus[status], 0);
             const r = reductionPct / 100;
-            const projectedTat = base.baselineTat - (base.repeatTat * r);
+            const projectedTat = base.baselineTat * (1 - r);
             totalBaselineTat += base.baselineTat;
             totalProjectedTat += projectedTat;
             totalCase += base.appCount;
             breachBase += base.breachBase;
             base.perApp.forEach(x => {
-                const projTat = x.firstTat + (x.extraTat * (1 - r));
+                const projTat = x.totalTat * (1 - r);
                 if (projTat > base.boundary) breachProj++;
             });
         });
 
         const tatSaved = totalBaselineTat - totalProjectedTat;
         const portfolioDelta = (e2eData.length > 0) ? tatSaved / e2eData.length : 0;
-        const currentPortfolioAvg = safeNum(globalStats.avg, 0);
+        const currentPortfolioAvg = safeNum((baseGlobalStats || {}).avg, safeNum(globalStats.avg, 0));
         const projectedPortfolioAvg = Math.max(0, currentPortfolioAvg - portfolioDelta);
 
         const id = (x) => document.getElementById(x);
@@ -3536,14 +3715,23 @@ ${userText}`
         if (id('simPortfolioDelta')) id('simPortfolioDelta').textContent = `-${portfolioDelta.toFixed(2)} days`;
         if (id('simBreachBase')) id('simBreachBase').textContent = breachBase.toLocaleString();
         if (id('simBreachProj')) id('simBreachProj').textContent = breachProj.toLocaleString();
+        const reduced = simulatedStatuses
+            .filter(s => safeNum(simReductionByStatus[s], 0) > 0)
+            .map(s => ({ status: s, pct: safeNum(simReductionByStatus[s], 0) }));
+        simLastSnapshot = {
+            baselineAvg: currentPortfolioAvg,
+            projectedAvg: projectedPortfolioAvg,
+            tatSaved,
+            portfolioDelta,
+            breachBase,
+            breachProj,
+            reduced
+        };
         if (id('simInsight')) {
             const breachDrop = breachBase - breachProj;
             const metricSaved = `<span class="sim-insight-metric">${tatSaved.toFixed(1)} hari</span>`;
             const metricDelta = `<span class="sim-insight-metric">${portfolioDelta.toFixed(2)} hari/app</span>`;
             const metricBreach = `<span class="sim-insight-metric">${breachDrop.toLocaleString()} case</span>`;
-            const reduced = simulatedStatuses
-                .filter(s => safeNum(simReductionByStatus[s], 0) > 0)
-                .map(s => ({ status: s, pct: safeNum(simReductionByStatus[s], 0) }));
             if (!reduced.length) {
                 id('simInsight').innerHTML =
                     `Belum ada status yang diturunkan (>0%): pengurangan loop gabungan berpotensi menghemat ${metricSaved}, menurunkan avg portfolio ${metricDelta}, dan mengurangi breach ${metricBreach}.`;
@@ -3557,11 +3745,148 @@ ${userText}`
         }
 
         renderActionSimChart(currentPortfolioAvg, projectedPortfolioAvg, breachBase, breachProj);
+        applySimulationToDashboard();
     }
 
     function updateActionSimulator() {
         ensureSimStatusControls(simStatusOrder || []);
         recalcActionSimulator();
+    }
+
+    function buildSimulatedProjection() {
+        const statusAggSim = {};
+        const tatSavedByApp = {};
+        const flowSource = baseAppFlowEvents || {};
+        const flowEventsSim = cloneFlowEventMap(flowSource);
+        const appIds = Object.keys(flowEventsSim || {});
+        appIds.forEach(appId => {
+            const events = getOrderedFlowEvents(flowEventsSim[appId] || {});
+            events.forEach(ev => {
+                const status = String(ev.status || 'Unknown').trim() || 'Unknown';
+                const reductionPct = safeNum(simReductionByStatus[status], 0);
+                const originalDur = safeNum(ev.duration, 0);
+                let simulatedDur = originalDur;
+                if (reductionPct > 0) {
+                    simulatedDur = originalDur * (1 - (reductionPct / 100));
+                    tatSavedByApp[appId] = (tatSavedByApp[appId] || 0) + (originalDur - simulatedDur);
+                }
+                ev.duration = simulatedDur;
+                const key = `${appId}##${status}`;
+                statusAggSim[key] = (statusAggSim[key] || 0) + simulatedDur;
+            });
+        });
+
+        const e2eSim = (baseE2EData || []).map(app => {
+            const saved = safeNum(tatSavedByApp[app.id], 0);
+            const tat = Math.max(0, safeNum(app.tat, 0) - saved);
+            return { ...app, tat: Math.round(tat * 10) / 10 };
+        }).sort((a, b) => a.tat - b.tat);
+
+        const appsSim = {};
+        Object.keys(baseAppsById || {}).forEach(id => {
+            appsSim[id] = { ...baseAppsById[id] };
+        });
+
+        return { e2eSim, statusAggSim, appsSim, flowEventsSim };
+    }
+
+    function renderDashboardFromCurrentDataset(appsMap, statusAggMap) {
+        appsWithPositiveLimit = e2eData.filter(app => app.limit > 0);
+        const totalApps = e2eData.length;
+        const appsWithZeroOrNegativeLimit = e2eData.filter(app => app.limit <= 0).length;
+        const totalLimit = appsWithPositiveLimit.reduce((sum, app) => sum + app.limit, 0);
+        const uniqueMonths = [...new Set(e2eData.map(d=>d.mon))].filter(x=>x!=='Unknown').length || 1;
+
+        globalStats = calcStats(e2eData.map(d=>d.tat));
+        globalOutliers = e2eData.filter(d => d.tat > globalStats.high);
+        calculateQuartileApplications(e2eData, globalStats);
+        prepareChartData(e2eData, globalStats);
+
+        document.getElementById('kTotalApp').innerText = totalApps.toLocaleString();
+        document.getElementById('kAvgAppMonth').innerText = (totalApps/uniqueMonths).toFixed(0);
+        document.getElementById('kTotalLimit').innerText = formatIDR(totalLimit);
+
+        const limitSubText = document.getElementById('limitSubText');
+        const limitInfoBadge = document.getElementById('limitInfoBadge');
+        if (appsWithZeroOrNegativeLimit > 0) {
+            limitSubText.innerHTML = `Portfolio Exposure`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">Only from ${appsWithPositiveLimit.length} apps (${appsWithZeroOrNegativeLimit} apps without limit)</span>`;
+        } else {
+            limitSubText.innerHTML = `Portfolio Exposure`;
+            limitInfoBadge.innerHTML = `<span class="limit-info">All ${totalApps} apps have limits</span>`;
+        }
+
+        const avgLimit = appsWithPositiveLimit.length > 0 ? totalLimit / appsWithPositiveLimit.length : 0;
+        document.getElementById('kAvgLimit').innerText = formatIDR(avgLimit);
+        const avgLimitSubText = document.getElementById('avgLimitSubText');
+        const avgLimitInfoBadge = document.getElementById('avgLimitInfoBadge');
+        if (appsWithPositiveLimit.length > 0) {
+            avgLimitSubText.innerHTML = `Average Ticket Size`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-info">From ${appsWithPositiveLimit.length} apps with limit > 0</span>`;
+        } else {
+            avgLimitSubText.innerHTML = `Average Ticket Size`;
+            avgLimitInfoBadge.innerHTML = `<span class="limit-warning">No applications with limit > 0</span>`;
+        }
+        document.getElementById('limitCalcInfo').innerHTML =
+            `From ${totalApps} applications, ${appsWithPositiveLimit.length} have limit > 0 (${appsWithZeroOrNegativeLimit} apps dengan limit 0 excluded from calculation).`;
+
+        document.getElementById('vAvg').innerText = globalStats.avg.toFixed(1);
+        document.getElementById('vMed').innerText = globalStats.med.toFixed(1);
+        document.getElementById('vMode').innerText = globalStats.mod;
+        document.getElementById('vQ1').innerText = globalStats.q1.toFixed(1);
+        document.getElementById('vQ3').innerText = globalStats.q3.toFixed(1);
+        document.getElementById('vOut').innerText = globalStats.out;
+
+        const iqrValue = globalStats.q3 - globalStats.q1;
+        document.getElementById('vIQR').innerText = iqrValue.toFixed(1);
+        document.getElementById('vOutBoundary').innerText = globalStats.high.toFixed(1);
+        document.getElementById('infoQ1').innerText = globalStats.q1.toFixed(1);
+        document.getElementById('infoQ3').innerText = globalStats.q3.toFixed(1);
+        document.getElementById('outlierFormula').innerHTML =
+            `${globalStats.q3.toFixed(1)} + 1.5x${iqrValue.toFixed(1)} = ${globalStats.high.toFixed(1)} days`;
+
+        createCharts(e2eData, globalStats, statusAggMap, appsMap, true);
+    }
+
+    function applySimulationToDashboard() {
+        if (!baseE2EData.length) return;
+        const hasReduction = (simStatusOrder || []).some(status => safeNum(simReductionByStatus[status], 0) > 0);
+        if (!hasReduction) {
+            e2eData = baseE2EData.map(x => ({ ...x })).sort((a, b) => a.tat - b.tat);
+            appFlowEvents = cloneFlowEventMap(baseAppFlowEvents || {});
+            e2eById = {};
+            e2eData.forEach(app => { e2eById[app.id] = app; });
+            renderDashboardFromCurrentDataset(baseAppsById, baseStatusAgg);
+            refreshOpenSingleAppModalIfNeeded();
+            refreshOpenBottleneckModalIfNeeded();
+            return;
+        }
+        const sim = buildSimulatedProjection();
+        e2eData = sim.e2eSim;
+        appFlowEvents = sim.flowEventsSim;
+        e2eById = {};
+        e2eData.forEach(app => { e2eById[app.id] = app; });
+        renderDashboardFromCurrentDataset(sim.appsSim, sim.statusAggSim);
+        refreshOpenSingleAppModalIfNeeded();
+        refreshOpenBottleneckModalIfNeeded();
+    }
+
+    function refreshOpenSingleAppModalIfNeeded() {
+        const modalEl = document.getElementById('singleAppModal');
+        if (!modalEl || !modalEl.classList.contains('show')) return;
+        const currentId = window.currentSingleApp && window.currentSingleApp.id;
+        if (!currentId) return;
+        const app = e2eById[currentId] || e2eData.find(x => x.id === currentId);
+        if (app) {
+            showSingleAppDetail(app, true);
+        }
+    }
+
+    function refreshOpenBottleneckModalIfNeeded() {
+        const modalEl = document.getElementById('bottleneckDetailModal');
+        if (!modalEl || !modalEl.classList.contains('show')) return;
+        if (!currentBottleneckStatus) return;
+        showBottleneckDetail(currentBottleneckStatus, true);
     }
 
     function resetActionSimulator() {
@@ -3570,13 +3895,101 @@ ${userText}`
         statusList.forEach(status => {
             simReductionByStatus[status] = 0;
         });
-        document.querySelectorAll('#simStatusControls input[data-status]').forEach(input => {
+        document.querySelectorAll('#simStatusControls input[data-status], #simStatusControlsFloating input[data-status]').forEach(input => {
             input.value = 0;
             const row = input.closest('.sim-row');
             const pct = row ? row.querySelector('.sim-pct') : null;
             if (pct) pct.textContent = '0%';
         });
         recalcActionSimulator();
+    }
+
+    function saveScenarioSlot() {
+        const slotEl = document.getElementById('simScenarioSlot');
+        const slot = slotEl ? slotEl.value : 'A';
+        const payload = {
+            savedAt: new Date().toISOString(),
+            reductions: { ...simReductionByStatus }
+        };
+        localStorage.setItem(`los_sim_scenario_${slot}`, JSON.stringify(payload));
+        alert(`Scenario ${slot} saved.`);
+    }
+
+    function loadScenarioSlot() {
+        const slotEl = document.getElementById('simScenarioSlot');
+        const slot = slotEl ? slotEl.value : 'A';
+        const rawScenario = localStorage.getItem(`los_sim_scenario_${slot}`);
+        if (!rawScenario) {
+            alert(`Scenario ${slot} belum ada.`);
+            return;
+        }
+        try {
+            const data = JSON.parse(rawScenario);
+            const reductions = data && data.reductions ? data.reductions : {};
+            (simStatusOrder || []).forEach(status => {
+                simReductionByStatus[status] = safeNum(reductions[status], 0);
+            });
+            ensureSimStatusControls(simStatusOrder || []);
+            document.querySelectorAll('#simStatusControls input[data-status], #simStatusControlsFloating input[data-status]').forEach(input => {
+                const status = input.getAttribute('data-status') || '';
+                const val = safeNum(simReductionByStatus[status], 0);
+                input.value = val;
+                const row = input.closest('.sim-row');
+                const pct = row ? row.querySelector('.sim-pct') : null;
+                if (pct) pct.textContent = `${val}%`;
+            });
+            recalcActionSimulator();
+        } catch (_) {
+            alert(`Scenario ${slot} tidak valid.`);
+        }
+    }
+
+    function exportSimulationReport() {
+        const snap = simLastSnapshot || {
+            baselineAvg: safeNum((baseGlobalStats || {}).avg, 0),
+            projectedAvg: safeNum(globalStats.avg, 0),
+            tatSaved: 0,
+            portfolioDelta: 0,
+            breachBase: 0,
+            breachProj: 0,
+            reduced: []
+        };
+        const rows = (snap.reduced || []).map(x => `<li>${escapeHtml(x.status)}: ${x.pct}%</li>`).join('');
+        const html = `
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Simulation Compare</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#0f172a}
+h2{margin:0 0 6px 0} .muted{color:#64748b;font-size:12px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.card{border:1px solid #cbd5e1;border-radius:8px;padding:10px}
+.k{font-size:11px;color:#64748b;text-transform:uppercase}.v{font-size:24px;font-weight:800}
+ul{margin:6px 0 0 18px}
+</style></head>
+<body>
+<h2>LOS Simulation Report (Before vs After)</h2>
+<div class="muted">Generated: ${new Date().toLocaleString()}</div>
+<div class="grid">
+<div class="card"><div class="k">Baseline Avg TAT</div><div class="v">${safeNum(snap.baselineAvg,0).toFixed(2)} days</div></div>
+<div class="card"><div class="k">Projected Avg TAT</div><div class="v">${safeNum(snap.projectedAvg,0).toFixed(2)} days</div></div>
+<div class="card"><div class="k">Delta Portfolio</div><div class="v">-${safeNum(snap.portfolioDelta,0).toFixed(2)} days/app</div></div>
+<div class="card"><div class="k">TAT Saved</div><div class="v">${safeNum(snap.tatSaved,0).toFixed(1)} days</div></div>
+<div class="card"><div class="k">SLA Breach Baseline</div><div class="v">${safeNum(snap.breachBase,0).toLocaleString()}</div></div>
+<div class="card"><div class="k">SLA Breach Projected</div><div class="v">${safeNum(snap.breachProj,0).toLocaleString()}</div></div>
+</div>
+<div class="card">
+<div class="k">Applied Reductions</div>
+${rows ? `<ul>${rows}</ul>` : '<div>No reduction applied.</div>'}
+</div>
+</body></html>`;
+        const w = window.open('', '_blank');
+        if (!w) return;
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        w.focus();
+        setTimeout(() => w.print(), 250);
     }
 
     function mkChart(id, type, l, d, lbl, c, ax='x') {
@@ -3663,7 +4076,7 @@ ${userText}`
         showDetailModal('outlier', apps, title, headerColor, infoText);
     }
 
-    function showSingleAppDetail(app) {
+    function showSingleAppDetail(app, refreshOnly = false) {
         if (!app) return;
         
         const isOutlier = app.tat > globalStats.high;
@@ -3869,6 +4282,10 @@ ${userText}`
         
         // Store current app for navigation
         window.currentSingleApp = app;
+
+        if (refreshOnly) {
+            return;
+        }
         
         // Show modal
         const modalElement = document.getElementById('singleAppModal');
@@ -4261,7 +4678,7 @@ ${userText}`
         link.click();
         document.body.removeChild(link);
     }
-    function showBottleneckDetail(status) {
+    function showBottleneckDetail(status, refreshOnly = false) {
         const statusRows = statusDurationBuckets[status] || [];
         if (!statusRows.length) {
             alert(`No data for status "${status}"`);
@@ -4328,13 +4745,13 @@ ${userText}`
         const reworkRate = totalCase > 0 ? (returnCases / totalCase) * 100 : 0;
         const avgLoopPerCase = returnCases > 0 ? totalLoopForReturnCases / returnCases : 1;
         const avgExtraTat = returnCases > 0 ? totalExtraTat / returnCases : 0;
-        const statusBoundary = safeNum((statusStats[status] || {}).boundary, safeNum(globalStats.high, 0));
+        const statusAvgTatThreshold = safeNum((statusStats[status] || {}).avg, safeNum(globalStats.avg, 0));
 
         appIds.forEach(id => {
             const limit = safeNum(appMap[id].app.limit, 0);
             if (limit >= 1e9) {
                 const bucketLabel = bucketLabelForBottleneckLoan(limit);
-                if (safeNum(appMap[id].statusTat, 0) > statusBoundary) {
+                if (safeNum(appMap[id].statusTat, 0) > statusAvgTatThreshold) {
                     loanBucketStats[bucketLabel].breachCount++;
                 }
             }
@@ -4375,10 +4792,10 @@ ${userText}`
             const avgTat = d.cnt > 0 ? d.sumTat / d.cnt : 0;
             let priority = 'Low';
             let priorityClass = 'bg-success';
-            if (d.cnt >= 30 && breachPct >= 5) {
+            if (d.cnt >= 30 && breachPct >= 15) {
                 priority = 'High';
                 priorityClass = 'bg-danger';
-            } else if (d.cnt >= 30 && breachPct >= 2) {
+            } else if (d.cnt >= 30 && breachPct >= 8) {
                 priority = 'Medium';
                 priorityClass = 'bg-warning text-dark';
             }
@@ -4401,7 +4818,7 @@ ${userText}`
                 <td class="text-end">${r.cnt.toLocaleString()}</td>
                 <td class="text-end">${r.avgLoopDist.toFixed(2)}x</td>
                 <td class="text-end">${r.avgTat.toFixed(1)} days</td>
-                <td class="text-end">${statusBoundary.toFixed(1)} days</td>
+                <td class="text-end">${statusAvgTatThreshold.toFixed(1)} days</td>
                 <td class="text-end">${r.breachCount}/${r.cnt} (${r.breachPct.toFixed(1)}%) ${r.lowSample ? '<span class="badge bg-secondary ms-1">Low Sample</span>' : ''}</td>
                 <td class="text-center"><span class="badge ${r.priorityClass}">${r.priority}</span></td>
             </tr>
@@ -4421,7 +4838,7 @@ ${userText}`
 
         const topBreach = rowsWithData[0];
         const biggestVolume = [...rowsWithData].sort((a, b) => b.cnt - a.cnt)[0];
-        let insight = `Boundary status ${status}: ${statusBoundary.toFixed(1)} days. `;
+        let insight = `Avg TAT status ${status}: ${statusAvgTatThreshold.toFixed(1)} days. `;
         if (topBreach) {
             insight += `Breach tertinggi: ${topBreach.label} (${topBreach.breachCount}/${topBreach.cnt}, ${topBreach.breachPct.toFixed(1)}%). `;
         }
@@ -4488,7 +4905,9 @@ ${userText}`
         loanCanvas.ondragstart = () => false;
         loopCanvas.ondragstart = () => false;
 
-        new bootstrap.Modal(document.getElementById('bottleneckDetailModal')).show();
+        if (!refreshOnly) {
+            new bootstrap.Modal(document.getElementById('bottleneckDetailModal')).show();
+        }
     }
 
     function exportBottleneckData() {
